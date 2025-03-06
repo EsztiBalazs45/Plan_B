@@ -16,32 +16,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $status = $_POST['status'];
         $title = $_POST['title'];
         
-        $start = date('Y-m-d H:i:s', strtotime("$date $time"));
-        $end = date('Y-m-d H:i:s', strtotime("$date $time") + 3600); // Például 1 óra hozzáadása
+        // Combine date and time
+        $appointment_date = date('Y-m-d H:i:s', strtotime("$date $time"));
         
         $stmt = $conn->prepare("
             INSERT INTO appointments 
-            (user_id, client_id, title, start, end, description, status) 
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            (user_id, client_id, appointment_date, description, status, created_at) 
+            VALUES (?, ?, ?, ?, ?, NOW())
         ");
         
-        if ($stmt->execute([$_SESSION['user_id'], $client_id, $title, $start, $end, $description, $status])) {
-            $newId = $conn->lastInsertId();
-            echo json_encode([
-                'success' => true,
-                'message' => 'Időpont sikeresen létrehozva',
-                'event' => [
-                    'id' => $newId,
-                    'title' => $title,
-                    'start' => $start,
-                    'end' => $end,
-                    'client_id' => $client_id,
-                    'description' => $description,
-                    'status' => $status
-                ]
-            ]);
+        if ($stmt->execute([$_SESSION['user_id'], $client_id, $appointment_date, $description, $status , $title])) {
+            echo json_encode(['success' => true, 'message' => 'Időpont sikeresen létrehozva!']);
         } else {
-            echo json_encode(['success' => false, 'message' => 'Hiba történt az időpont létrehozása során']);
+            echo json_encode(['success' => false, 'message' => 'Hiba történt az időpont létrehozása során.']);
         }
     } catch(PDOException $e) {
         echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
