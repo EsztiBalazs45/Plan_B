@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Feb 25. 19:41
+-- Létrehozás ideje: 2025. Már 06. 21:01
 -- Kiszolgáló verziója: 10.4.32-MariaDB
 -- PHP verzió: 8.2.12
 
@@ -18,7 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Adatbázis: `test_database`
+-- Adatbázis: `asd`
 --
 
 -- --------------------------------------------------------
@@ -29,18 +29,17 @@ SET time_zone = "+00:00";
 
 CREATE TABLE `admins` (
   `id` bigint(20) UNSIGNED NOT NULL,
-  `username` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
   `password` varchar(255) NOT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
+  `user_id` bigint(20) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- A tábla adatainak kiíratása `admins`
 --
 
-INSERT INTO `admins` (`id`, `username`, `password`, `created_at`, `updated_at`) VALUES
-(1, 'admin@gmail.com', '$2y$12$3U1CPTWKfYKHwZgrVQSmKO5s2bS8OaUpnPThsLjP0lBYEg6oEluxq', '2025-02-25 15:18:48', '2025-02-25 15:18:48');
+INSERT INTO `admins` (`id`, `email`, `password`, `user_id`) VALUES
+(1, 'admin@gmail.com', '$2y$12$3U1CPTWKfYKHwZgrVQSmKO5s2bS8OaUpnPThsLjP0lBYEg6oEluxq', 0);
 
 -- --------------------------------------------------------
 
@@ -50,45 +49,54 @@ INSERT INTO `admins` (`id`, `username`, `password`, `created_at`, `updated_at`) 
 
 CREATE TABLE `appointments` (
   `id` bigint(20) UNSIGNED NOT NULL,
-  `date` date NOT NULL,
-  `timeline` time NOT NULL,
   `status` varchar(255) NOT NULL,
   `description` varchar(255) NOT NULL,
   `user_id` bigint(20) UNSIGNED NOT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
+  `title` varchar(50) NOT NULL,
+  `start` datetime NOT NULL,
+  `end` datetime NOT NULL,
+  `client_id` bigint(20) UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- A tábla adatainak kiíratása `appointments`
 --
 
-INSERT INTO `appointments` (`id`, `date`, `timeline`, `status`, `description`, `user_id`, `created_at`, `updated_at`) VALUES
-(1, '1976-03-02', '15:54:49', 'confirmed', 'Eos voluptas magni nemo eaque quia.', 6, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(2, '1971-12-20', '02:58:40', 'canceled', 'Vero dolorum sit commodi explicabo facilis.', 9, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(3, '1981-04-10', '02:48:05', 'confirmed', 'Amet sint id voluptatum dignissimos quo eaque.', 8, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(4, '2013-01-08', '02:20:09', 'pending', 'Ullam tenetur eveniet rerum eligendi animi ut porro.', 6, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(5, '1980-12-22', '13:20:40', 'pending', 'Esse dolorem quo iste suscipit.', 7, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(6, '1993-02-08', '09:48:47', 'pending', 'Est nobis eos incidunt nobis.', 8, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(7, '1989-11-11', '10:43:53', 'canceled', 'Dolor reiciendis sequi eaque.', 9, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(8, '1999-06-12', '04:18:23', 'pending', 'Expedita ut repudiandae aliquam officiis cupiditate ut.', 7, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(9, '1976-06-23', '09:32:04', 'confirmed', 'Omnis error accusantium accusamus eum ipsam et.', 1, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(10, '2010-10-30', '14:07:35', 'pending', 'Velit sunt enim hic explicabo.', 7, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(11, '1972-05-04', '03:19:13', 'canceled', 'Iste est eveniet quia ullam sit repellendus suscipit.', 7, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(12, '2004-07-16', '18:44:14', 'pending', 'Voluptatum placeat placeat incidunt.', 1, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(13, '2014-04-12', '11:57:30', 'canceled', 'Est voluptates dolor vel ea est natus quas.', 7, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(14, '1980-07-28', '06:45:21', 'confirmed', 'Animi ad dolores non eos ut sit.', 4, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(15, '2010-03-21', '01:24:15', 'confirmed', 'Perferendis voluptas velit harum.', 1, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(16, '2019-06-21', '02:50:47', 'canceled', 'Quis soluta facere ducimus nobis ipsa.', 8, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(17, '2008-07-15', '04:09:04', 'canceled', 'Facilis eos qui ad nobis.', 8, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(18, '1995-06-03', '16:59:42', 'canceled', 'Reprehenderit facere quod ut qui blanditiis.', 3, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(19, '2013-12-15', '15:02:50', 'canceled', 'Et autem facilis illo dicta explicabo.', 5, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(20, '2010-02-22', '18:18:40', 'pending', 'Similique natus adipisci saepe.', 8, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(21, '2014-11-07', '00:44:07', 'confirmed', 'Est accusantium rem et perferendis.', 7, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(22, '1988-06-29', '10:10:21', 'confirmed', 'Et blanditiis laboriosam voluptatibus natus.', 7, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(23, '2019-12-26', '18:09:56', 'pending', 'Consequuntur eos fuga rerum eaque in.', 10, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(24, '2016-08-15', '02:17:21', 'pending', 'Veritatis est aut voluptatibus asperiores veritatis occaecati quas.', 10, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(25, '1993-01-30', '23:59:43', 'canceled', 'Fugit nemo nulla sunt.', 9, '2025-02-25 15:18:48', '2025-02-25 15:18:48');
+INSERT INTO `appointments` (`id`, `status`, `description`, `user_id`, `title`, `start`, `end`, `client_id`) VALUES
+(1, 'confirmed', 'Eos voluptas magni nemo eaque quia.', 6, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
+(2, 'canceled', 'Vero dolorum sit commodi explicabo facilis.', 9, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
+(3, 'confirmed', 'Amet sint id voluptatum dignissimos quo eaque.', 8, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
+(4, 'pending', 'Ullam tenetur eveniet rerum eligendi animi ut porro.', 6, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
+(5, 'pending', 'Esse dolorem quo iste suscipit.', 7, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
+(6, 'pending', 'Est nobis eos incidunt nobis.', 8, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
+(7, 'canceled', 'Dolor reiciendis sequi eaque.', 9, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
+(8, 'pending', 'Expedita ut repudiandae aliquam officiis cupiditate ut.', 7, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
+(9, 'confirmed', 'Omnis error accusantium accusamus eum ipsam et.', 1, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
+(10, 'pending', 'Velit sunt enim hic explicabo.', 7, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
+(11, 'canceled', 'Iste est eveniet quia ullam sit repellendus suscipit.', 7, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
+(12, 'pending', 'Voluptatum placeat placeat incidunt.', 1, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
+(13, 'canceled', 'Est voluptates dolor vel ea est natus quas.', 7, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
+(14, 'confirmed', 'Animi ad dolores non eos ut sit.', 4, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
+(15, 'confirmed', 'Perferendis voluptas velit harum.', 1, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
+(16, 'canceled', 'Quis soluta facere ducimus nobis ipsa.', 8, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
+(17, 'canceled', 'Facilis eos qui ad nobis.', 8, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
+(18, 'canceled', 'Reprehenderit facere quod ut qui blanditiis.', 3, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
+(19, 'canceled', 'Et autem facilis illo dicta explicabo.', 5, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
+(20, 'pending', 'Similique natus adipisci saepe.', 8, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
+(21, 'confirmed', 'Est accusantium rem et perferendis.', 7, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
+(22, 'confirmed', 'Et blanditiis laboriosam voluptatibus natus.', 7, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
+(23, 'pending', 'Consequuntur eos fuga rerum eaque in.', 10, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
+(24, 'pending', 'Veritatis est aut voluptatibus asperiores veritatis occaecati quas.', 10, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
+(25, 'canceled', 'Fugit nemo nulla sunt.', 9, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
+(31, 'pending', 'valami', 106, 'próba', '2025-03-05 15:28:00', '2025-03-05 15:52:00', 77),
+(32, 'confirmed', 'valami', 106, 'próba', '2025-03-05 15:28:00', '2025-03-05 15:52:00', 77),
+(33, 'pending', 'asdadadasdasdasdasdsd', 106, 'időpont', '2025-03-05 12:21:00', '2025-03-05 12:42:00', 77),
+(37, 'pending', '', 106, 'próba', '2025-03-05 14:00:00', '2025-03-05 14:30:00', 77),
+(38, 'pending', 'asdad', 106, 'próba', '2025-03-05 14:00:00', '2025-03-05 14:30:00', 77),
+(39, 'pending', 'asdasdadasdadsad', 106, 'próba', '2025-03-06 12:00:00', '2025-03-06 12:30:00', 77),
+(40, 'pending', 'sadasdadasdsadsadad', 106, 'időpont', '2025-03-06 14:00:00', '2025-03-06 14:30:00', 77),
+(42, 'confirmed', 'sadadasdasdasdasd', 106, 'próba', '2025-03-06 09:37:00', '2025-03-06 10:37:00', 77),
+(43, 'pending', 'sadadasdasdadad', 106, 'időpont', '2025-03-07 09:46:00', '2025-03-07 10:04:00', 77);
 
 -- --------------------------------------------------------
 
@@ -212,7 +220,8 @@ INSERT INTO `clients` (`id`, `user_id`, `CompanyName`, `tax_number`, `registrati
 (72, 7, 'Elouise Heathcote', '891254139', '263463636', '34647 Kasey Fords\nTremblayfort, ID 69091', 'Anissa White', '(315) 215-6135', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (73, 6, 'Christelle Stoltenberg', '755171641', '333463617', '532 Blanda Rest Apt. 873\nLake Arnaldo, CO 62622-1868', 'Chester Bradtke', '240.757.0463', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (74, 5, 'Sandra Johnston', '766593340', '234166993', '730 Velma Extension Suite 851\nCedrickmouth, OK 32568', 'Mr. Constantin Hand II', '(458) 899-7490', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(75, 1, 'Cathrine Veum', '410667237', '454582596', '96132 Romaguera Unions\nPort Hymanton, NY 85038-3910', 'Ms. Kacie Nicolas', '+1.937.620.6801', '2025-02-25 15:18:48', '2025-02-25 15:18:48');
+(75, 1, 'Cathrine Veum', '410667237', '454582596', '96132 Romaguera Unions\nPort Hymanton, NY 85038-3910', 'Ms. Kacie Nicolas', '+1.937.620.6801', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
+(77, 106, 'Corki_repcsi Kft', '2145172185718', '945678213', 'Pécs Valami utca 27', 'Kis Pál', '+36303521472', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -316,21 +325,19 @@ CREATE TABLE `newsletters` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `newsletter_title` varchar(255) NOT NULL,
   `newsletter_status` int(11) NOT NULL,
-  `user_id` bigint(20) UNSIGNED NOT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
+  `user_id` bigint(20) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- A tábla adatainak kiíratása `newsletters`
 --
 
-INSERT INTO `newsletters` (`id`, `newsletter_title`, `newsletter_status`, `user_id`, `created_at`, `updated_at`) VALUES
-(1, 'Ella Hills IV', 1, 3, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(2, 'Ashtyn Schamberger', 0, 7, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(3, 'Mrs. Ardella Ondricka MD', 0, 5, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(4, 'Miss Karlee Kling IV', 1, 10, '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(5, 'Prof. Hannah Wintheiser', 0, 4, '2025-02-25 15:18:48', '2025-02-25 15:18:48');
+INSERT INTO `newsletters` (`id`, `newsletter_title`, `newsletter_status`, `user_id`) VALUES
+(1, 'Ella Hills IV', 1, 3),
+(2, 'Ashtyn Schamberger', 0, 7),
+(3, 'Mrs. Ardella Ondricka MD', 0, 5),
+(4, 'Miss Karlee Kling IV', 1, 10),
+(5, 'Prof. Hannah Wintheiser', 0, 4);
 
 -- --------------------------------------------------------
 
@@ -370,9 +377,10 @@ CREATE TABLE `personal_acces_token` (
 --
 
 CREATE TABLE `services` (
+  `id` int(11) UNSIGNED NOT NULL,
   `service_name` varchar(255) NOT NULL,
   `service_description` text NOT NULL,
-  `service_price` decimal(10,2) NOT NULL,
+  `service_price` decimal(10,0) NOT NULL,
   `service_id` bigint(20) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -380,17 +388,14 @@ CREATE TABLE `services` (
 -- A tábla adatainak kiíratása `services`
 --
 
-INSERT INTO `services` (`service_name`, `service_description`, `service_price`, `service_id`) VALUES
-('Pressure Vessel Inspector', 'Explicabo fugiat sit numquam dolor voluptatibus autem. Et aut quis quod. Et ut qui libero est id voluptatem praesentium. Excepturi illum ipsum non natus tenetur aut.', 62898.00, 2),
-('Fire Investigator', 'Est esse perspiciatis omnis facere. In molestias ipsam necessitatibus perferendis. Deserunt soluta at et est autem aperiam consequatur. Placeat qui cumque magni aliquid velit.', 18856.00, 2),
-('Legal Support Worker', 'Qui veritatis aut quam in culpa repudiandae molestias. Nulla autem debitis dolorem architecto esse.', 99224.00, 2),
-('Sports Book Writer', 'Repudiandae sed corporis est autem. Beatae velit sunt quo vel iste. Optio veritatis quae reprehenderit eligendi voluptas molestiae excepturi. Et eaque laudantium a nesciunt quod.', 67817.00, 2),
-('Protective Service Worker', 'Facilis animi non id quibusdam provident aspernatur nobis. Ut rerum et eos unde tenetur officia. Qui nisi odit voluptatem nihil.', 32009.00, 2),
-('File Clerk', 'Officiis eius sunt eos atque. Error commodi animi harum rerum commodi minus. Facere molestias aliquam harum rerum.', 31835.00, 2),
-('Musician', 'Molestias earum quia aut eaque voluptates optio. Quo et harum recusandae impedit culpa aut. Totam voluptatem optio illum nemo eius molestiae est repellat. Aut aut repellendus architecto id.', 27951.00, 2),
-('Housekeeper', 'Tempora veritatis et suscipit et facilis velit voluptatem. Quia autem mollitia laborum nesciunt nam omnis praesentium. Esse error et mollitia inventore. Officia omnis aut quis dolorem error.', 19020.00, 2),
-('Director Of Marketing', 'Qui eos asperiores eaque sunt dolores. Et ratione non eum repellendus qui consequuntur. Doloribus non quis delectus maxime. Cum officiis vel enim incidunt.', 21244.00, 2),
-('Photographic Processing Machine Operator', 'Rerum aut enim et at. Similique minima aut omnis sed laudantium animi. Maxime repudiandae expedita dolor odit.', 76143.00, 2);
+INSERT INTO `services` (`id`, `service_name`, `service_description`, `service_price`, `service_id`) VALUES
+(1, 'Könyvelési Alap\r\n\r\n', 'Ideális kisvállalkozásoknak és egyéni vállalkozóknak, akik egyszerű, de megbízható könyvelési megoldást keresnek. Tartalmazza az alapvető könyvelést, havi bevallások elkészítését (ÁFA, SZJA), valamint évente egy adóbevallást. Személyre szabott tanácsadás nélkül, de e-mailes támogatással.\"\r\n\r\n', 25000, 0),
+(2, 'Üzleti Prémium\r\n\r\n', 'Közepes méretű vállalkozásoknak ajánljuk, akik teljes körű könyvelési szolgáltatást igényelnek. Az alap könyvelésen túl (bérszámfejtés, ÁFA-bevallás, éves beszámoló) havi riportokat és negyedéves pénzügyi elemzést biztosítunk. Telefonos és személyes konzultáció havi 1 órában.\r\n\r\n', 35000, 1),
+(3, 'Teljes Kontroll\r\n\r\n\r\n', 'Nagyvállalatok és összetett pénzügyi igényekkel rendelkező cégek számára. Minden könyvelési feladatot ellátunk (bérszámfejtés, kettős könyvvitel, adóoptimalizálás), plusz havi cash-flow elemzés, adótanácsadás és korlátlan konzultáció. Prioritásos ügyfélkezelés és 24/7 elérhetőség vészhelyzet esetén.\r\n\r\n', 48000, 2),
+(4, 'Kezdő Vállalkozó\r\n\r\n\r\n\r\n\r\n\r\n', 'Frissen induló vállalkozásoknak szóló csomag, hogy az első lépések egyszerűek legyenek. Egyszeri cégalapítási tanácsadás, alap könyvelés (havi 50 bizonylatig), ÁFA-bevallás és egy adóbevallás az év végén. Online felületen követheted a pénzügyeidet!\r\n\r\n', 15000, 3),
+(5, 'Személyre Szabott Könyvelés\r\n\r\n\r\n\r\n\r\n\r\n\r\n', 'Rugalmas megoldás egyedi igényekre. Te döntöd el, mire van szükséged: bérszámfejtés, adótanácsadás, könyvvitel, vagy akár pályázati pénzügyi tervezés. Egyedi árajánlat alapján, havi fix díjjal, korlátlan e-mailes és havi 2 óra személyes konzultációval.\r\n\r\n', 40000, 4),
+(6, 'Bérügyi Alap\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n', 'Kifejezetten azoknak a vállalkozásoknak, akiknek a bérszámfejtés a legfontosabb. Havi bérszámfejtés akár 10 alkalmazottig, TB- és járulékbevallások elkészítése, valamint munkavállalói dokumentumok vezetése. Egyszerű könyvelési feladatok nélkül, de havi e-mailes összesítővel a bérköltségekről.\r\n\r\n', 36600, 5),
+(7, 'Adómester\r\n\r\n\r\n\r\n', 'Cégeknek és vállalkozóknak, akik az adóterhek csökkentésére fókuszálnak. Teljes körű adótanácsadás, adóstratégia kidolgozása, havi könyvelés (100 bizonylatig), ÁFA-bevallás és éves adóbevallás. Negyedévente személyes konzultáció az adóoptimalizálás frissítésére, plusz egyedi elemzés a költségcsökkentési lehetőségekről.\r\n\r\n', 78000, 6);
 
 -- --------------------------------------------------------
 
@@ -440,6 +445,29 @@ CREATE TABLE `sessions` (
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
 ('tUCY91gZDd6lwoFbPJKVDLEh3XfFwbbDBQIEfk6Z', 79, '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36', 'YTo0OntzOjY6Il90b2tlbiI7czo0MDoiaTMwMlB1NUVVeERwQzV4dW5WbWxhUVdLbmVRdHZEVjNnTTk2SHg1NSI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6MTp7czozOiJ1cmwiO3M6MzE6Imh0dHA6Ly8xMjcuMC4wLjE6ODAwMC9kYXNoYm9hcmQiO31zOjUwOiJsb2dpbl93ZWJfNTliYTM2YWRkYzJiMmY5NDAxNTgwZjAxNGM3ZjU4ZWE0ZTMwOTg5ZCI7aTo3OTt9', 1740508886);
+
+-- --------------------------------------------------------
+
+--
+-- Tábla szerkezet ehhez a táblához `subscriptions`
+--
+
+CREATE TABLE `subscriptions` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `service_id` bigint(20) UNSIGNED NOT NULL,
+  `start_date` timestamp NOT NULL DEFAULT current_timestamp(),
+  `end_date` timestamp NULL DEFAULT NULL,
+  `status` enum('active','cancelled') DEFAULT 'active'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- A tábla adatainak kiíratása `subscriptions`
+--
+
+INSERT INTO `subscriptions` (`id`, `user_id`, `service_id`, `start_date`, `end_date`, `status`) VALUES
+(12, 106, 0, '2025-03-05 09:15:40', NULL, 'active'),
+(14, 106, 6, '2025-03-05 11:57:46', NULL, 'active');
 
 -- --------------------------------------------------------
 
@@ -564,7 +592,13 @@ INSERT INTO `users` (`id`, `name`, `username`, `email`, `role`, `email_verified_
 (97, 'Mr. Bertram Hermann', 'jeanette.rohan', 'xvolkman@example.org', 'user', '2025-02-25 15:18:48', '$2y$12$G5HgiiilYqaMdvbV5ZUPLetbrxq5F8RwljjBH3VuTy8zg5uf1kLb.', '9rWFPlJBK5', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (98, 'Dr. Jadyn Rogahn DDS', 'eleonore36', 'legros.paige@example.net', 'user', '2025-02-25 15:18:48', '$2y$12$G5HgiiilYqaMdvbV5ZUPLetbrxq5F8RwljjBH3VuTy8zg5uf1kLb.', 'j2zYgHblaw', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (99, 'Prof. Deshaun Marquardt MD', 'brown.uriel', 'bell89@example.org', 'user', '2025-02-25 15:18:48', '$2y$12$G5HgiiilYqaMdvbV5ZUPLetbrxq5F8RwljjBH3VuTy8zg5uf1kLb.', '7hoakrUMhp', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(100, 'Mrs. Brooke Beier V', 'zboncak.alessandro', 'merritt41@example.com', 'user', '2025-02-25 15:18:48', '$2y$12$G5HgiiilYqaMdvbV5ZUPLetbrxq5F8RwljjBH3VuTy8zg5uf1kLb.', 'iUqxtJdGPe', '2025-02-25 15:18:48', '2025-02-25 15:18:48');
+(100, 'Mrs. Brooke Beier V', 'zboncak.alessandro', 'merritt41@example.com', 'user', '2025-02-25 15:18:48', '$2y$12$G5HgiiilYqaMdvbV5ZUPLetbrxq5F8RwljjBH3VuTy8zg5uf1kLb.', 'iUqxtJdGPe', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
+(101, 'asdads', 'cat', 'tanklr@gmail.com', 'user', NULL, '$2y$10$sttg/PN9U3RAfiTCnqSst.UhjXM9Iewv9Kv5y3RxeKJPR1HxjrY7K', NULL, NULL, NULL),
+(102, 'kis andras', 'asdasd', 'andras@jedlik.eu', 'user', NULL, '$2y$10$jss4mJeZeumuxN46mE6qteGwdb2XJ2oq0QsrVAIO7ANaQa8.6BlUy', NULL, NULL, NULL),
+(103, 'kalap tamás', 'Kalapos', 'kalap@asd.hu', 'user', NULL, '$2y$10$/nrCeqHNM.zgYD0/No0T1eStHU.YnIIN.mmD..IFNbuESOiOXQ9oO', NULL, NULL, NULL),
+(105, 'Kulcs József', 'Kulacs', 'Kulcsa@asd.com', 'admin', NULL, '$2y$10$Lf1ZSos4h2WJ1xIT1HRU6Opx4GWU2JBbPEc/5z9FXkh2/VyTDR0Ta', NULL, NULL, NULL),
+(106, 'Tac András', 'Tacker', 'tictac@jedlik.hu', 'admin', NULL, '$2y$10$wYqjESQ793BG1QnUk.EGi.YzqDy3ybK534KxuOaMn2.dGP7HU0eke', NULL, NULL, NULL),
+(107, 'Kala Pál', 'kalap', 'kala@gamil.com', 'user', NULL, '$2y$10$4So5HV/woIrefXFOC75bnuJjzYNXOkzs72v8xB0v5iLF3K7n/1GJ2', NULL, NULL, NULL);
 
 --
 -- Indexek a kiírt táblákhoz
@@ -575,15 +609,16 @@ INSERT INTO `users` (`id`, `name`, `username`, `email`, `role`, `email_verified_
 --
 ALTER TABLE `admins`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `admins_username_unique` (`username`),
-  ADD UNIQUE KEY `admins_password_unique` (`password`);
+  ADD UNIQUE KEY `admins_password_unique` (`password`),
+  ADD UNIQUE KEY `admins_username_unique` (`email`);
 
 --
 -- A tábla indexei `appointments`
 --
 ALTER TABLE `appointments`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `appointments_user_id_foreign` (`user_id`);
+  ADD KEY `appointments_user_id_foreign` (`user_id`),
+  ADD KEY `FK_appointments_clients_id` (`client_id`);
 
 --
 -- A tábla indexei `cache`
@@ -661,6 +696,8 @@ ALTER TABLE `personal_acces_token`
 -- A tábla indexei `services`
 --
 ALTER TABLE `services`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `service_id` (`service_id`) USING BTREE,
   ADD KEY `services_service_id_foreign` (`service_id`);
 
 --
@@ -677,6 +714,14 @@ ALTER TABLE `sessions`
   ADD PRIMARY KEY (`id`),
   ADD KEY `sessions_user_id_index` (`user_id`),
   ADD KEY `sessions_last_activity_index` (`last_activity`);
+
+--
+-- A tábla indexei `subscriptions`
+--
+ALTER TABLE `subscriptions`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `service_id` (`service_id`),
+  ADD KEY `user_id` (`user_id`);
 
 --
 -- A tábla indexei `users`
@@ -700,30 +745,18 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT a táblához `appointments`
 --
 ALTER TABLE `appointments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
 
 --
 -- AUTO_INCREMENT a táblához `clients`
 --
 ALTER TABLE `clients`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=76;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=78;
 
 --
 -- AUTO_INCREMENT a táblához `data`
 --
 ALTER TABLE `data`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT a táblához `failed_jobs`
---
-ALTER TABLE `failed_jobs`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT a táblához `jobs`
---
-ALTER TABLE `jobs`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
@@ -745,16 +778,28 @@ ALTER TABLE `personal_acces_token`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT a táblához `services`
+--
+ALTER TABLE `services`
+  MODIFY `id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
 -- AUTO_INCREMENT a táblához `service_users`
 --
 ALTER TABLE `service_users`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
+-- AUTO_INCREMENT a táblához `subscriptions`
+--
+ALTER TABLE `subscriptions`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+
+--
 -- AUTO_INCREMENT a táblához `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=101;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=108;
 
 --
 -- Megkötések a kiírt táblákhoz
@@ -764,7 +809,8 @@ ALTER TABLE `users`
 -- Megkötések a táblához `appointments`
 --
 ALTER TABLE `appointments`
-  ADD CONSTRAINT `appointments_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+  ADD CONSTRAINT `FK_appointments_clients_id` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `FK_appointments_users_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
 -- Megkötések a táblához `clients`
@@ -779,16 +825,17 @@ ALTER TABLE `newsletters`
   ADD CONSTRAINT `newsletters_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 --
--- Megkötések a táblához `services`
---
-ALTER TABLE `services`
-  ADD CONSTRAINT `services_service_id_foreign` FOREIGN KEY (`service_id`) REFERENCES `service_users` (`id`) ON DELETE CASCADE;
-
---
 -- Megkötések a táblához `service_users`
 --
 ALTER TABLE `service_users`
   ADD CONSTRAINT `service_users_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+
+--
+-- Megkötések a táblához `subscriptions`
+--
+ALTER TABLE `subscriptions`
+  ADD CONSTRAINT `FK_subscriptions_services_service_id` FOREIGN KEY (`service_id`) REFERENCES `services` (`service_id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `subscriptions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
