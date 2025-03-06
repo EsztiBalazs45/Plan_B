@@ -1,0 +1,2 @@
+ALTER TABLE events ADD COLUMN client_id INT;
+ALTER TABLE events ADD FOREIGN KEY (client_id) REFERENCES clients(id) ON DELETE SET NULL;

@@ -1,0 +1,2 @@
+ALTER TABLE users ADD COLUMN services_id INT;
+ALTER TABLE users ADD FOREIGN KEY (services_id) REFERENCES services(id) ON DELETE SET NULL;
