@@ -138,6 +138,22 @@ try {
                 </div>
             </div>
         </div>
+        
+        <div class="col-md-4">
+            <div class="card action-card h-100">
+                <div class="card-body">
+                    <div class="action-icon text-primary mb-3">
+                        <i class="fas fa-file-invoice-dollar fa-2x"></i>
+                    </div>
+                    <h5 class="card-title">Dokumentumok</h5>
+                    <p class="card-text">Segítséget nyujtó Dokumentumok</p>
+                    <a href="pages/documents.php" class="btn btn-primary text-white mt-3">
+                        <i class="fas fa-arrow-right"></i> Letölthető Dokumentumok
+                    </a>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 

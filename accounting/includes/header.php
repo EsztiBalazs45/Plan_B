@@ -156,6 +156,12 @@ $current_page = basename($_SERVER['PHP_SELF']);
                         <i class="fas fa-calculator"></i> Szolgáltatások
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a class="nav-link <?php echo $current_page === 'service.php' ? 'active' : ''; ?>" href="/Bozont_cucc/accounting/pages/documents.php">
+                        <i class="fas fa-comments-dollar"></i> Dokumentumok
+                    </a>
+                </li>
+
 
             </ul>
             
