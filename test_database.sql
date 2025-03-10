@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Már 10. 11:06
+-- Létrehozás ideje: 2025. Már 10. 12:32
 -- Kiszolgáló verziója: 10.4.32-MariaDB
 -- PHP verzió: 8.2.12
 
@@ -88,9 +88,9 @@ INSERT INTO `appointments` (`id`, `status`, `description`, `user_id`, `title`, `
 (24, 'pending', 'Veritatis est aut voluptatibus asperiores veritatis occaecati quas.', 10, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
 (25, 'canceled', 'Fugit nemo nulla sunt.', 9, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
 (44, 'canceled', 'dsahbdzasavhbsvfhgadbf', 106, 'időpont', '2025-03-10 10:00:00', '2025-03-10 10:30:00', 77),
-(45, 'canceled', 'asdsadasdsadsadasdasdsa', 106, 'asdasdad', '2025-03-10 10:00:00', '2025-03-10 11:00:00', 77),
 (46, 'pending', 'asdaasdadasdada', 106, 'időpont', '2025-03-10 12:00:00', '2025-03-10 12:30:00', 77),
-(48, 'confirmed', 'asdadasdasdad', 106, 'Valami', '2025-03-11 07:00:00', '2025-03-11 07:30:00', 77);
+(48, 'confirmed', 'asdadasdasdad', 106, 'Valami', '2025-03-11 07:00:00', '2025-03-11 07:30:00', 77),
+(49, 'pending', 'valami megduma ', 106, 'megduma', '2025-03-10 15:00:00', '2025-03-10 15:30:00', 77);
 
 -- --------------------------------------------------------
 
@@ -750,7 +750,7 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT a táblához `appointments`
 --
 ALTER TABLE `appointments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
 
 --
 -- AUTO_INCREMENT a táblához `clients`
