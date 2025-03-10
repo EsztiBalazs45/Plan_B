@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Már 06. 21:01
+-- Létrehozás ideje: 2025. Már 10. 11:06
 -- Kiszolgáló verziója: 10.4.32-MariaDB
 -- PHP verzió: 8.2.12
 
@@ -30,16 +30,15 @@ SET time_zone = "+00:00";
 CREATE TABLE `admins` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `email` varchar(255) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `user_id` bigint(20) UNSIGNED NOT NULL
+  `password` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- A tábla adatainak kiíratása `admins`
 --
 
-INSERT INTO `admins` (`id`, `email`, `password`, `user_id`) VALUES
-(1, 'admin@gmail.com', '$2y$12$3U1CPTWKfYKHwZgrVQSmKO5s2bS8OaUpnPThsLjP0lBYEg6oEluxq', 0);
+INSERT INTO `admins` (`id`, `email`, `password`) VALUES
+(1, 'admin@gmail.com', '$2y$12$3U1CPTWKfYKHwZgrVQSmKO5s2bS8OaUpnPThsLjP0lBYEg6oEluxq');
 
 -- --------------------------------------------------------
 
@@ -88,15 +87,10 @@ INSERT INTO `appointments` (`id`, `status`, `description`, `user_id`, `title`, `
 (23, 'pending', 'Consequuntur eos fuga rerum eaque in.', 10, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
 (24, 'pending', 'Veritatis est aut voluptatibus asperiores veritatis occaecati quas.', 10, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
 (25, 'canceled', 'Fugit nemo nulla sunt.', 9, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
-(31, 'pending', 'valami', 106, 'próba', '2025-03-05 15:28:00', '2025-03-05 15:52:00', 77),
-(32, 'confirmed', 'valami', 106, 'próba', '2025-03-05 15:28:00', '2025-03-05 15:52:00', 77),
-(33, 'pending', 'asdadadasdasdasdasdsd', 106, 'időpont', '2025-03-05 12:21:00', '2025-03-05 12:42:00', 77),
-(37, 'pending', '', 106, 'próba', '2025-03-05 14:00:00', '2025-03-05 14:30:00', 77),
-(38, 'pending', 'asdad', 106, 'próba', '2025-03-05 14:00:00', '2025-03-05 14:30:00', 77),
-(39, 'pending', 'asdasdadasdadsad', 106, 'próba', '2025-03-06 12:00:00', '2025-03-06 12:30:00', 77),
-(40, 'pending', 'sadasdadasdsadsadad', 106, 'időpont', '2025-03-06 14:00:00', '2025-03-06 14:30:00', 77),
-(42, 'confirmed', 'sadadasdasdasdasd', 106, 'próba', '2025-03-06 09:37:00', '2025-03-06 10:37:00', 77),
-(43, 'pending', 'sadadasdasdadad', 106, 'időpont', '2025-03-07 09:46:00', '2025-03-07 10:04:00', 77);
+(44, 'canceled', 'dsahbdzasavhbsvfhgadbf', 106, 'időpont', '2025-03-10 10:00:00', '2025-03-10 10:30:00', 77),
+(45, 'canceled', 'asdsadasdsadsadasdasdsa', 106, 'asdasdad', '2025-03-10 10:00:00', '2025-03-10 11:00:00', 77),
+(46, 'pending', 'asdaasdadasdada', 106, 'időpont', '2025-03-10 12:00:00', '2025-03-10 12:30:00', 77),
+(48, 'confirmed', 'asdadasdasdad', 106, 'Valami', '2025-03-11 07:00:00', '2025-03-11 07:30:00', 77);
 
 -- --------------------------------------------------------
 
@@ -226,14 +220,25 @@ INSERT INTO `clients` (`id`, `user_id`, `CompanyName`, `tax_number`, `registrati
 -- --------------------------------------------------------
 
 --
--- Tábla szerkezet ehhez a táblához `data`
+-- Tábla szerkezet ehhez a táblához `dowloaddata`
 --
 
-CREATE TABLE `data` (
+CREATE TABLE `dowloaddata` (
   `id` bigint(20) UNSIGNED NOT NULL,
-  `DataName` varchar(255) NOT NULL,
-  `DataFile` varchar(255) NOT NULL
+  `title` varchar(255) NOT NULL,
+  `DataFile` varchar(255) NOT NULL,
+  `description` text NOT NULL,
+  `upload_date` datetime NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- A tábla adatainak kiíratása `dowloaddata`
+--
+
+INSERT INTO `dowloaddata` (`id`, `title`, `DataFile`, `description`, `upload_date`) VALUES
+(1, 'Számlázási útmutató', 'szamlazas.pdf', 'Útmutató a számlázáshoz', '2025-03-08 13:57:22'),
+(2, 'Adóbevallás nyomtatvány', 'ado_nyomtatvany.pdf', '2025-ös adóbevallás űrlap', '2025-03-08 13:57:22'),
+(3, 'Szerződés minta', 'szerzodes.docx', 'Általános szerződés sablon', '2025-03-08 13:57:22');
 
 -- --------------------------------------------------------
 
@@ -640,9 +645,9 @@ ALTER TABLE `clients`
   ADD KEY `clients_user_id_foreign` (`user_id`);
 
 --
--- A tábla indexei `data`
+-- A tábla indexei `dowloaddata`
 --
-ALTER TABLE `data`
+ALTER TABLE `dowloaddata`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -745,7 +750,7 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT a táblához `appointments`
 --
 ALTER TABLE `appointments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=49;
 
 --
 -- AUTO_INCREMENT a táblához `clients`
@@ -754,10 +759,10 @@ ALTER TABLE `clients`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=78;
 
 --
--- AUTO_INCREMENT a táblához `data`
+-- AUTO_INCREMENT a táblához `dowloaddata`
 --
-ALTER TABLE `data`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+ALTER TABLE `dowloaddata`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT a táblához `migrations`
