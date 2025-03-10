@@ -32,14 +32,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $end = date('Y-m-d H:i:s', strtotime("$end_date $end_time"));
         $now = date('Y-m-d H:i:s');
 
-        // Múltbeli időpont tiltása
         if ($start < $now) {
             $_SESSION['error'] = 'Nem foglalhatsz múltbeli időpontot!';
             header('Location: appointments.php');
             exit();
         }
 
-        // Ütközés ellenőrzése
         $stmt = $conn->prepare("
             SELECT COUNT(*) 
             FROM appointments 
@@ -54,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ");
         $stmt->execute([
             $user_id,
-            isset($_POST['appointment_id']) ? $_POST['appointment_id'] : 0, // Ha új, 0, különben az ID
+            isset($_POST['appointment_id']) ? $_POST['appointment_id'] : 0,
             $start, $start,
             $end, $end,
             $start, $end
@@ -93,9 +91,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (isset($_POST['delete_appointment'])) {
         $appointment_id = $_POST['appointment_id'];
-        $stmt = $conn->prepare("UPDATE appointments SET status = 'canceled' WHERE id = ? AND user_id = ?");
+        $stmt = $conn->prepare("DELETE FROM appointments WHERE id = ? AND user_id = ?");
         $stmt->execute([$appointment_id, $user_id]);
-        $_SESSION['message'] = 'Időpont sikeresen lemondva!';
+        $_SESSION['message'] = 'Időpont sikeresen törölve!';
         $_SESSION['message_type'] = 'success';
         header('Location: appointments.php');
         exit();
@@ -134,9 +132,7 @@ ob_end_flush();
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <style>
-        .form-control, .form-select {
-            max-width: 300px;
-        }
+        .form-control, .form-select { max-width: 300px; }
     </style>
 </head>
 <body>
@@ -191,7 +187,7 @@ ob_end_flush();
                         <select class="form-select" id="status" name="status" required>
                             <option value="pending" <?php echo $edit_appointment && $edit_appointment['status'] === 'pending' ? 'selected' : ''; ?>>Függőben</option>
                             <option value="confirmed" <?php echo $edit_appointment && $edit_appointment['status'] === 'confirmed' ? 'selected' : ''; ?>>Megerősítve</option>
-                            <option value="canceled" <?php echo $edit_appointment && $edit_appointment['status']  === 'canceled' ? 'selected' : ''; ?>>Lemondva</option>
+                            <option value="canceled" <?php echo $edit_appointment && $edit_appointment['status'] === 'canceled' ? 'selected' : ''; ?>>Lemondva</option>
                         </select>
                     </div>
                     <button type="submit" name="<?php echo $action === 'new' ? 'add_appointment' : 'edit_appointment'; ?>" class="btn btn-primary">Mentés</button>
@@ -233,9 +229,9 @@ ob_end_flush();
                                         <td><?php echo ucfirst($appointment['status']); ?></td>
                                         <td>
                                             <a href="?action=edit&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-primary">Szerkesztés</a>
-                                            <form method="POST" style="display:inline;" onsubmit="return confirm('Biztosan lemondod ezt az időpontot?');">
+                                            <form method="POST" style="display:inline;" onsubmit="return confirm('Biztosan törlöd ezt az időpontot?');">
                                                 <input type="hidden" name="appointment_id" value="<?php echo $appointment['id']; ?>">
-                                                <button type="submit" name="delete_appointment" class="btn btn-sm btn-danger">Lemondás</button>
+                                                <button type="submit" name="delete_appointment" class="btn btn-sm btn-danger">Törlés</button>
                                             </form>
                                         </td>
                                     </tr>
@@ -266,9 +262,8 @@ ob_end_flush();
     document.addEventListener('DOMContentLoaded', function() {
         const startDateInput = document.getElementById('start_date');
         const endDateInput = document.getElementById('end_date');
-
         startDateInput.addEventListener('change', function() {
-            endDateInput.value = this.value; // A befejezés dátuma megegyezik a kezdés dátumával
+            endDateInput.value = this.value;
         });
     });
 </script>

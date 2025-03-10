@@ -19,9 +19,9 @@ try {
 
     $events = array_map(function($appointment) {
         $statusColors = [
-            'pending' => '#ffc107', // Sárga
-            'confirmed' => '#28a745', // Zöld
-            'canceled' => '#dc3545' // Piros
+            'pending' => '#ffc107',
+            'confirmed' => '#28a745',
+            'canceled' => '#dc3545'
         ];
         return [
             'id' => $appointment['id'],
