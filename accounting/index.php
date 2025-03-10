@@ -104,7 +104,7 @@ try {
                     </div>
                     <h5 class="card-title">Időpontkezelés</h5>
                     <p class="card-text">Kezelje időpontjait és találkozóit egyszerűen és hatékonyan.</p>
-                    <a href="pages/calendar.php" class="btn btn-primary mt-3">
+                    <a href="pages//appointments.php" class="btn btn-primary mt-3">
                         <i class="fas fa-arrow-right"></i> Időpontok kezelése
                     </a>
                 </div>
@@ -142,12 +142,12 @@ try {
         <div class="col-md-4">
             <div class="card action-card h-100">
                 <div class="card-body">
-                    <div class="action-icon text-primary mb-3">
+                    <div class="action-icon text-warning mb-3">
                         <i class="fas fa-file-invoice-dollar fa-2x"></i>
                     </div>
                     <h5 class="card-title">Dokumentumok</h5>
                     <p class="card-text">Segítséget nyujtó Dokumentumok</p>
-                    <a href="pages/documents.php" class="btn btn-primary text-white mt-3">
+                    <a href="pages/documents.php" class="btn btn-warning text-white mt-3">
                         <i class="fas fa-arrow-right"></i> Letölthető Dokumentumok
                     </a>
                 </div>

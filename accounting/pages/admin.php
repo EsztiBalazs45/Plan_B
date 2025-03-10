@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['message_type'] = 'success';
             } catch (Exception $e) {
                 $conn->rollBack();
-                $_SESSION['message'] = 'Hiba történt a törlés során!';
+                $_SESSION['message'] = 'Hiba történt a törlés során: ' . $e->getMessage();
                 $_SESSION['message_type'] = 'danger';
             }
         } else {
@@ -79,7 +79,7 @@ $stmt = $conn->query("SELECT
     (SELECT COUNT(*) FROM users) AS total_users,
     (SELECT COUNT(*) FROM clients) AS total_clients,
     (SELECT COUNT(*) FROM appointments) AS total_appointments");
-$stats = $stmt->fetch();
+$stats = $stmt->fetch(PDO::FETCH_ASSOC);
 $total_users = $stats['total_users'];
 $total_clients = $stats['total_clients'];
 $total_appointments = $stats['total_appointments'];
@@ -87,7 +87,7 @@ $total_appointments = $stats['total_appointments'];
 // Felhasználók lekérdezése
 $stmt = $conn->prepare("SELECT * FROM users ORDER BY created_at DESC");
 $stmt->execute();
-$users = $stmt->fetchAll();
+$users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Legutóbbi aktivitások lekérdezése
 $stmt = $conn->prepare("SELECT 'appointment' as type, id, created_at, 'Új időpont létrehozva' as description FROM appointments
@@ -96,7 +96,7 @@ $stmt = $conn->prepare("SELECT 'appointment' as type, id, created_at, 'Új időp
     ORDER BY created_at DESC
     LIMIT 10");
 $stmt->execute();
-$recent_activities = $stmt->fetchAll();
+$recent_activities = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <div class="row mb-4">
@@ -150,6 +150,7 @@ $recent_activities = $stmt->fetchAll();
                                         <?php if ($user['id'] != $_SESSION['user_id']): ?>
                                             <form method="POST" action="" class="d-inline">
                                                 <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
+                                                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                                                 <select name="new_role" class="form-select form-select-sm d-inline-block w-auto"
                                                     onchange="this.form.submit()" style="width: 100px;">
                                                     <option value="user" <?php echo $user['role'] === 'user' ? 'selected' : ''; ?>>Felhasználó</option>
@@ -167,6 +168,7 @@ $recent_activities = $stmt->fetchAll();
                                             <form method="POST" action="" class="d-inline"
                                                 onsubmit="return confirm('Biztosan törölni szeretné ezt a felhasználót?');">
                                                 <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
+                                                <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
                                                 <button type="submit" name="delete_user" class="btn btn-sm btn-danger">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
@@ -199,7 +201,7 @@ $recent_activities = $stmt->fetchAll();
                                 <?php endif; ?>
                             </div>
                             <div class="activity-content">
-                                <div class="activity-text"><?php echo $activity['description']; ?></div>
+                                <div class="activity-text"><?php echo htmlspecialchars($activity['description']); ?></div>
                                 <small class="text-muted"><?php echo date('Y.m.d H:i', strtotime($activity['created_at'])); ?></small>
                             </div>
                         </div>
@@ -215,17 +217,14 @@ $recent_activities = $stmt->fetchAll();
         max-height: 400px;
         overflow-y: auto;
     }
-
     .activity-item {
         padding: 10px;
         border-radius: 8px;
         transition: background-color 0.3s ease;
     }
-
     .activity-item:hover {
         background-color: #f8f9fa;
     }
-
     .activity-icon {
         width: 40px;
         height: 40px;
@@ -235,7 +234,6 @@ $recent_activities = $stmt->fetchAll();
         align-items: center;
         justify-content: center;
     }
-
     .activity-icon i {
         font-size: 1.2rem;
     }

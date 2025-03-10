@@ -1,4 +1,5 @@
 <?php
+ob_start();
 require_once '../includes/header.php';
 require_once '../includes/config.php';
 
@@ -38,6 +39,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
 
+        // Ütközés ellenőrzése
+        $stmt = $conn->prepare("
+            SELECT COUNT(*) 
+            FROM appointments 
+            WHERE user_id = ? 
+            AND status != 'canceled'
+            AND id != ?
+            AND (
+                (start <= ? AND end > ?) OR 
+                (start < ? AND end >= ?) OR 
+                (start >= ? AND end <= ?)
+            )
+        ");
+        $stmt->execute([
+            $user_id,
+            isset($_POST['appointment_id']) ? $_POST['appointment_id'] : 0, // Ha új, 0, különben az ID
+            $start, $start,
+            $end, $end,
+            $start, $end
+        ]);
+        if ($stmt->fetchColumn() > 0) {
+            $_SESSION['error'] = 'Ez az idősáv már foglalt!';
+            header('Location: appointments.php');
+            exit();
+        }
+
         try {
             if (isset($_POST['add_appointment'])) {
                 $stmt = $conn->prepare("
@@ -66,9 +93,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (isset($_POST['delete_appointment'])) {
         $appointment_id = $_POST['appointment_id'];
-        $stmt = $conn->prepare("DELETE FROM appointments WHERE id = ? AND user_id = ?");
+        $stmt = $conn->prepare("UPDATE appointments SET status = 'canceled' WHERE id = ? AND user_id = ?");
         $stmt->execute([$appointment_id, $user_id]);
-        $_SESSION['message'] = 'Időpont sikeresen törölve!';
+        $_SESSION['message'] = 'Időpont sikeresen lemondva!';
         $_SESSION['message_type'] = 'success';
         header('Location: appointments.php');
         exit();
@@ -96,6 +123,7 @@ if ($action === 'list') {
     $stmt->execute([$user_id]);
     $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+ob_end_flush();
 ?>
 
 <!DOCTYPE html>
@@ -105,110 +133,145 @@ if ($action === 'list') {
     <title>Időpontok</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        .form-control, .form-select {
+            max-width: 300px;
+        }
+    </style>
 </head>
 <body>
-<?php if ($action === 'new' || $action === 'edit'): ?>
-    <div class="card">
-        <div class="card-header">
-            <h5><?php echo $action === 'new' ? 'Új időpont' : 'Időpont szerkesztése'; ?></h5>
-        </div>
-        <div class="card-body">
-            <form method="POST" class="needs-validation" novalidate>
-                <input type="hidden" name="appointment_id" value="<?php echo $edit_appointment['id'] ?? ''; ?>">
-                <div class="mb-3">
-                    <label for="title" class="form-label">Cím</label>
-                    <input type="text" class="form-control" id="title" name="title" value="<?php echo $edit_appointment['title'] ?? ''; ?>" required>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="start_date" class="form-label">Kezdés dátuma</label>
-                        <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $edit_appointment ? date('Y-m-d', strtotime($edit_appointment['start'])) : date('Y-m-d'); ?>" required>
+<div class="container mt-4">
+    <?php if ($action === 'new' || $action === 'edit'): ?>
+        <div class="card">
+            <div class="card-header">
+                <h5><?php echo $action === 'new' ? 'Új időpont' : 'Időpont szerkesztése'; ?></h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" class="needs-validation" novalidate>
+                    <input type="hidden" name="appointment_id" value="<?php echo $edit_appointment['id'] ?? ''; ?>">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Cím</label>
+                        <input type="text" class="form-control" id="title" name="title" value="<?php echo $edit_appointment['title'] ?? ''; ?>" required>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="start_time" class="form-label">Kezdés ideje</label>
-                        <input type="time" class="form-control" id="start_time" name="start_time" value="<?php echo $edit_appointment ? date('H:i', strtotime($edit_appointment['start'])) : '09:00'; ?>" required>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="start_date" class="form-label">Kezdés dátuma</label>
+                            <input type="date" class="form-control" id="start_date" name="start_date" value="<?php echo $edit_appointment ? date('Y-m-d', strtotime($edit_appointment['start'])) : date('Y-m-d'); ?>" min="<?php echo date('Y-m-d'); ?>" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="start_time" class="form-label">Kezdés ideje</label>
+                            <input type="time" class="form-control" id="start_time" name="start_time" value="<?php echo $edit_appointment ? date('H:i', strtotime($edit_appointment['start'])) : '07:00'; ?>" min="07:00" max="16:00" step="1800" required>
+                        </div>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="end_date" class="form-label">Befejezés dátuma</label>
-                        <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $edit_appointment ? date('Y-m-d', strtotime($edit_appointment['end'])) : date('Y-m-d'); ?>" required>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="end_date" class="form-label">Befejezés dátuma</label>
+                            <input type="date" class="form-control" id="end_date" name="end_date" value="<?php echo $edit_appointment ? date('Y-m-d', strtotime($edit_appointment['end'])) : date('Y-m-d'); ?>" min="<?php echo date('Y-m-d'); ?>" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="end_time" class="form-label">Befejezés ideje</label>
+                            <input type="time" class="form-control" id="end_time" name="end_time" value="<?php echo $edit_appointment ? date('H:i', strtotime($edit_appointment['end'])) : '07:30'; ?>" min="07:00" max="16:00" step="1800" required>
+                        </div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="end_time" class="form-label">Befejezés ideje</label>
-                        <input type="time" class="form-control" id="end_time" name="end_time" value="<?php echo $edit_appointment ? date('H:i', strtotime($edit_appointment['end'])) : '10:00'; ?>" required>
+                    <div class="mb-3">
+                        <label for="client_id" class="form-label">Ügyfél</label>
+                        <select class="form-select" id="client_id" name="client_id" required>
+                            <option value="">Válasszon ügyfelet...</option>
+                            <?php foreach ($clients as $client): ?>
+                                <option value="<?php echo $client['id']; ?>" <?php echo $edit_appointment && $edit_appointment['client_id'] == $client['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($client['CompanyName']); ?></option>
+                            <?php endforeach; ?>
+                        </select>
                     </div>
-                </div>
-                <div class="mb-3">
-                    <label for="client_id" class="form-label">Ügyfél</label>
-                    <select class="form-select" id="client_id" name="client_id" required>
-                        <option value="">Válasszon ügyfelet...</option>
-                        <?php foreach ($clients as $client): ?>
-                            <option value="<?php echo $client['id']; ?>" <?php echo $edit_appointment && $edit_appointment['client_id'] == $client['id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($client['CompanyName']); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label for="description" class="form-label">Leírás</label>
-                    <textarea class="form-control" id="description" name="description" required><?php echo $edit_appointment['description'] ?? ''; ?></textarea>
-                </div>
-                <div class="mb-3">
-                    <label for="status" class="form-label">Státusz</label>
-                    <select class="form-select" id="status" name="status" required>
-                        <option value="pending" <?php echo $edit_appointment && $edit_appointment['status'] === 'pending' ? 'selected' : ''; ?>>Függőben</option>
-                        <option value="confirmed" <?php echo $edit_appointment && $edit_appointment['status'] === 'confirmed' ? 'selected' : ''; ?>>Megerősítve</option>
-                        <option value="canceled" <?php echo $edit_appointment && $edit_appointment['status'] === 'canceled' ? 'selected' : ''; ?>>Lemondva</option>
-                    </select>
-                </div>
-                <button type="submit" name="<?php echo $action === 'new' ? 'add_appointment' : 'edit_appointment'; ?>" class="btn btn-primary">Mentés</button>
-            </form>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Leírás</label>
+                        <textarea class="form-control" id="description" name="description"><?php echo $edit_appointment['description'] ?? ''; ?></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Státusz</label>
+                        <select class="form-select" id="status" name="status" required>
+                            <option value="pending" <?php echo $edit_appointment && $edit_appointment['status'] === 'pending' ? 'selected' : ''; ?>>Függőben</option>
+                            <option value="confirmed" <?php echo $edit_appointment && $edit_appointment['status'] === 'confirmed' ? 'selected' : ''; ?>>Megerősítve</option>
+                            <option value="canceled" <?php echo $edit_appointment && $edit_appointment['status']  === 'canceled' ? 'selected' : ''; ?>>Lemondva</option>
+                        </select>
+                    </div>
+                    <button type="submit" name="<?php echo $action === 'new' ? 'add_appointment' : 'edit_appointment'; ?>" class="btn btn-primary">Mentés</button>
+                    <a href="appointments.php" class="btn btn-secondary">Vissza</a>
+                </form>
+            </div>
         </div>
-    </div>
-<?php else: ?>
-    <div class="card">
-        <div class="card-header">
-            <h5>Időpontok</h5>
-            <a href="?action=new" class="btn btn-primary">Új időpont</a>
+    <?php else: ?>
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5>Időpontok</h5>
+                <a href="?action=new" class="btn btn-primary">Új időpont</a>
+            </div>
+            <div class="card-body">
+                <?php if (empty($appointments)): ?>
+                    <p>Még nincsenek időpontok.</p>
+                <?php else: ?>
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Kezdés</th>
+                                    <th>Befejezés</th>
+                                    <th>Cím</th>
+                                    <th>Ügyfél</th>
+                                    <th>Leírás</th>
+                                    <th>Státusz</th>
+                                    <th>Műveletek</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($appointments as $appointment): ?>
+                                    <tr>
+                                        <td><?php echo date('Y.m.d H:i', strtotime($appointment['start'])); ?></td>
+                                        <td><?php echo date('Y.m.d H:i', strtotime($appointment['end'])); ?></td>
+                                        <td><?php echo htmlspecialchars($appointment['title']); ?></td>
+                                        <td><?php echo htmlspecialchars($appointment['CompanyName']); ?></td>
+                                        <td><?php echo htmlspecialchars($appointment['description'] ?? ''); ?></td>
+                                        <td><?php echo ucfirst($appointment['status']); ?></td>
+                                        <td>
+                                            <a href="?action=edit&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-primary">Szerkesztés</a>
+                                            <form method="POST" style="display:inline;" onsubmit="return confirm('Biztosan lemondod ezt az időpontot?');">
+                                                <input type="hidden" name="appointment_id" value="<?php echo $appointment['id']; ?>">
+                                                <button type="submit" name="delete_appointment" class="btn btn-sm btn-danger">Lemondás</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif; ?>
+            </div>
         </div>
-        <div class="card-body">
-            <?php if (empty($appointments)): ?>
-                <p>Még nincsenek időpontok.</p>
-            <?php else: ?>
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Kezdés</th>
-                            <th>Befejezés</th>
-                            <th>Cím</th>
-                            <th>Ügyfél</th>
-                            <th>Leírás</th>
-                            <th>Státusz</th>
-                            <th>Műveletek</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($appointments as $appointment): ?>
-                            <tr>
-                                <td><?php echo date('Y.m.d H:i', strtotime($appointment['start'])); ?></td>
-                                <td><?php echo date('Y.m.d H:i', strtotime($appointment['end'])); ?></td>
-                                <td><?php echo htmlspecialchars($appointment['title']); ?></td>
-                                <td><?php echo htmlspecialchars($appointment['CompanyName']); ?></td>
-                                <td><?php echo htmlspecialchars($appointment['description']); ?></td>
-                                <td><?php echo $appointment['status']; ?></td>
-                                <td>
-                                    <a href="?action=edit&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-primary">Szerkesztés</a>
-                                    <form method="POST" style="display:inline;" onsubmit="return confirm('Biztosan törlöd?');">
-                                        <input type="hidden" name="appointment_id" value="<?php echo $appointment['id']; ?>">
-                                        <button type="submit" name="delete_appointment" class="btn btn-sm btn-danger">Törlés</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php endif; ?>
-        </div>
-    </div>
-<?php endif; ?>
+    <?php endif; ?>
 
+    <?php if (isset($_SESSION['message'])): ?>
+        <div class="alert alert-<?php echo $_SESSION['message_type'] ?? 'info'; ?> mt-3" role="alert">
+            <?php echo $_SESSION['message']; ?>
+        </div>
+        <?php unset($_SESSION['message'], $_SESSION['message_type']); ?>
+    <?php endif; ?>
+    <?php if (isset($_SESSION['error'])): ?>
+        <div class="alert alert-danger mt-3" role="alert">
+            <?php echo $_SESSION['error']; ?>
+        </div>
+        <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const startDateInput = document.getElementById('start_date');
+        const endDateInput = document.getElementById('end_date');
+
+        startDateInput.addEventListener('change', function() {
+            endDateInput.value = this.value; // A befejezés dátuma megegyezik a kezdés dátumával
+        });
+    });
+</script>
 <?php require_once '../includes/footer.php'; ?>
+</body>
+</html>

@@ -12,16 +12,16 @@ try {
         SELECT a.id, a.title, a.start, a.end, a.description, a.status, a.client_id, c.CompanyName
         FROM appointments a
         LEFT JOIN clients c ON a.client_id = c.id
-        WHERE a.user_id = ?
+        WHERE a.user_id = ? AND a.status != 'canceled'
     ");
     $stmt->execute([$_SESSION['user_id']]);
     $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     $events = array_map(function($appointment) {
         $statusColors = [
-            'pending' => '#ffc107',
-            'confirmed' => '#28a745',
-            'canceled' => '#dc3545'
+            'pending' => '#ffc107', // Sárga
+            'confirmed' => '#28a745', // Zöld
+            'canceled' => '#dc3545' // Piros
         ];
         return [
             'id' => $appointment['id'],

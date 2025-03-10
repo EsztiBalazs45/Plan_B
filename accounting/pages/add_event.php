@@ -15,6 +15,29 @@ if ($data['start'] < $now) {
     exit();
 }
 
+// Ütközés ellenőrzése
+$stmt = $conn->prepare("
+    SELECT COUNT(*) 
+    FROM appointments 
+    WHERE user_id = ? 
+    AND status != 'canceled'
+    AND (
+        (start <= ? AND end > ?) OR 
+        (start < ? AND end >= ?) OR 
+        (start >= ? AND end <= ?)
+    )
+");
+$stmt->execute([
+    $_SESSION['user_id'],
+    $data['start'], $data['start'],
+    $data['end'], $data['end'],
+    $data['start'], $data['end']
+]);
+if ($stmt->fetchColumn() > 0) {
+    echo json_encode(['success' => false, 'message' => 'Ez az idősáv már foglalt!']);
+    exit();
+}
+
 try {
     $stmt = $conn->prepare("
         INSERT INTO appointments (user_id, client_id, title, start, end, description, status)

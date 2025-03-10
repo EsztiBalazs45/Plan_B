@@ -10,6 +10,8 @@ try {
         'create_services_table.sql',
         'create_subscriptions_table.sql',
         'create_newsletters_table.sql',
+        'create_dowloaddata_table.sql',
+        'create_admins_table.sql',
     ];
     
     foreach ($sql_files as $file) {
