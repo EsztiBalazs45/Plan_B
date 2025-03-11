@@ -37,11 +37,12 @@ $stmt->execute();
 $result = $stmt->get_result();
 $user = $result->fetch_assoc();
 
-// Get all active subscriptions
+// Get all active subscriptions with payment details
 $stmt = $conn->prepare("
-    SELECT s.*, srv.service_name 
-    FROM subscriptions s 
-    JOIN services srv ON s.service_id = srv.service_id 
+    SELECT s.*, srv.service_name, pd.cardholder_name, pd.card_number, pd.expiry_date, pd.cvv
+    FROM subscriptions s
+    JOIN services srv ON s.service_id = srv.service_id
+    LEFT JOIN payment_details pd ON s.id = pd.subscription_id AND s.user_id = pd.user_id
     WHERE s.user_id = ? AND s.status = 'active'
 ");
 $stmt->bind_param("i", $user_id);
@@ -52,9 +53,9 @@ $subscriptions = fetchAll($result);
 // Handle profile update
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['update_profile'])) {
-        $name = sanitize($_POST['name']);
-        $email = sanitize($_POST['email']);
-        $username = sanitize($_POST['username']);
+        $name = htmlspecialchars($_POST['name']);
+        $email = htmlspecialchars($_POST['email']);
+        $username = htmlspecialchars($_POST['username']);
 
         $stmt = $conn->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
         $stmt->bind_param("si", $email, $user_id);
@@ -85,20 +86,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Handle subscription cancellation with DELETE
-    if (isset($_POST['cancel_subscription'])) {
-        $subscription_id = (int)$_POST['subscription_id'];
+    // Handle subscription cancellation
+if (isset($_POST['cancel_subscription'])) {
+    $subscription_id = (int)$_POST['subscription_id'];
+    $conn->begin_transaction();
+    try {
+        // Először töröljük a payment_details rekordokat
+        $stmt = $conn->prepare("DELETE FROM payment_details WHERE subscription_id = ? AND user_id = ?");
+        $stmt->bind_param("ii", $subscription_id, $user_id);
+        $stmt->execute();
+
+        // Utána töröljük a subscriptions rekordot
         $stmt = $conn->prepare("DELETE FROM subscriptions WHERE id = ? AND user_id = ?");
         $stmt->bind_param("ii", $subscription_id, $user_id);
+        $stmt->execute();
+
+        $conn->commit();
+        $_SESSION['message'] = 'Előfizetés sikeresen lemondva és törölve!';
+        $_SESSION['message_type'] = 'success';
+        header('Location: profile.php');
+        exit();
+    } catch (Exception $e) {
+        $conn->rollback();
+        error_log("Hiba az előfizetés törlése során: " . $e->getMessage());
+        $_SESSION['message'] = 'Hiba történt az előfizetés törlése közben!';
+        $_SESSION['message_type'] = 'danger';
+    }
+}
+    // Handle payment details update
+    if (isset($_POST['update_payment'])) {
+        $subscription_id = (int)$_POST['subscription_id'];
+        $cardholder_name = htmlspecialchars($_POST['cardholder_name']);
+        $card_number = htmlspecialchars($_POST['card_number']);
+        $expiry_date = htmlspecialchars($_POST['expiry_date']);
+        $cvv = htmlspecialchars($_POST['cvv']);
+
+        $stmt = $conn->prepare("UPDATE payment_details SET cardholder_name = ?, card_number = ?, expiry_date = ?, cvv = ? WHERE subscription_id = ? AND user_id = ?");
+        $stmt->bind_param("ssssii", $cardholder_name, $card_number, $expiry_date, $cvv, $subscription_id, $user_id);
         if ($stmt->execute()) {
-            $_SESSION['message'] = 'Előfizetés sikeresen lemondva és törölve!';
+            $_SESSION['message'] = 'Fizetési adatok sikeresen frissítve!';
             $_SESSION['message_type'] = 'success';
-            header('Location: profile.php');
-            exit();
         } else {
-            $_SESSION['message'] = 'Hiba történt az előfizetés törlése közben!';
+            $_SESSION['message'] = 'Hiba történt a fizetési adatok frissítése közben!';
             $_SESSION['message_type'] = 'danger';
         }
+        header('Location: profile.php');
+        exit();
     }
 
     // Handle password change
@@ -163,6 +196,14 @@ ob_end_flush();
         .btn-primary:hover,
         .btn-danger:hover {
             transform: scale(1.05);
+        }
+
+        .payment-details-form {
+            display: none;
+        }
+
+        .payment-details-form.active {
+            display: block;
         }
     </style>
 </head>
@@ -230,11 +271,43 @@ ob_end_flush();
                                             <div class="card-body">
                                                 <h6><?php echo htmlspecialchars($sub['service_name']); ?></h6>
                                                 <p>Kezdete: <?php echo date('Y-m-d', strtotime($sub['start_date'])); ?></p>
-                                                <form method="POST">
+                                                <?php if ($sub['cardholder_name']): ?>
+                                                    <p>Fizetési adatok:</p>
+                                                    <p>Kártyatulajdonos: <?php echo htmlspecialchars($sub['cardholder_name']); ?></p>
+                                                    <p>Kártyaszám: ****-****-****-<?php echo substr(htmlspecialchars($sub['card_number']), -4); ?></p>
+                                                    <p>Lejárat: <?php echo htmlspecialchars($sub['expiry_date']); ?></p>
+                                                    <p>CVV: ***</p>
+                                                    <button class="btn btn-primary mt-2 edit-payment-btn" data-subscription-id="<?php echo $sub['id']; ?>">Fizetési adatok szerkesztése</button>
+                                                <?php endif; ?>
+                                                <form method="POST" style="margin-top: 10px;">
                                                     <input type="hidden" name="subscription_id" value="<?php echo $sub['id']; ?>">
                                                     <button type="submit" name="cancel_subscription" class="btn btn-danger" onclick="return confirm('Biztosan lemondod ezt az előfizetést?');">Lemondás</button>
                                                 </form>
                                             </div>
+                                        </div>
+                                        <!-- Fizetési adatok szerkesztése form -->
+                                        <div class="payment-details-form" id="payment-form-<?php echo $sub['id']; ?>">
+                                            <form method="POST" class="mt-3">
+                                                <input type="hidden" name="subscription_id" value="<?php echo $sub['id']; ?>">
+                                                <div class="mb-3">
+                                                    <label for="cardholder_name_<?php echo $sub['id']; ?>" class="form-label">Kártyatulajdonos neve</label>
+                                                    <input type="text" class="form-control" id="cardholder_name_<?php echo $sub['id']; ?>" name="cardholder_name" value="<?php echo htmlspecialchars($sub['cardholder_name'] ?? ''); ?>" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="card_number_<?php echo $sub['id']; ?>" class="form-label">Kártyaszám</label>
+                                                    <input type="number" class="form-control" id="card_number_<?php echo $sub['id']; ?>" name="card_number" value="<?php echo htmlspecialchars($sub['card_number'] ?? ''); ?>" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="expiry_date_<?php echo $sub['id']; ?>" class="form-label">Lejárati dátum</label>
+                                                    <input type="text" class="form-control" id="expiry_date_<?php echo $sub['id']; ?>" name="expiry_date" value="<?php echo htmlspecialchars($sub['expiry_date'] ?? ''); ?>" placeholder="MM/YY" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label for="cvv_<?php echo $sub['id']; ?>" class="form-label">CVV</label>
+                                                    <input type="number" class="form-control" id="cvv_<?php echo $sub['id']; ?>" name="cvv" value="<?php echo htmlspecialchars($sub['cvv'] ?? ''); ?>" required>
+                                                </div>
+                                                <button type="submit" name="update_payment" class="btn btn-primary">Mentés</button>
+                                                <button type="button" class="btn btn-secondary cancel-edit-btn" data-subscription-id="<?php echo $sub['id']; ?>">Mégse</button>
+                                            </form>
                                         </div>
                                     </div>
                                 <?php endforeach; ?>
@@ -297,6 +370,17 @@ ob_end_flush();
                 }, false);
             });
         })();
+
+        // Fizetési adatok szerkesztése
+        $('.edit-payment-btn').on('click', function() {
+            const subscriptionId = $(this).data('subscription-id');
+            $(`#payment-form-${subscriptionId}`).addClass('active');
+        });
+
+        $('.cancel-edit-btn').on('click', function() {
+            const subscriptionId = $(this).data('subscription-id');
+            $(`#payment-form-${subscriptionId}`).removeClass('active');
+        });
     </script>
 
     <?php require_once '../includes/footer.php'; ?>

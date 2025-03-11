@@ -37,14 +37,32 @@ $services = fetchAll($result);
 // Handle subscription request
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['subscribe'])) {
     $service_id = (int)$_POST['service_id'];
-    $stmt = $conn->prepare("INSERT INTO subscriptions (user_id, service_id, start_date) VALUES (?, ?, NOW())");
-    $stmt->bind_param("ii", $user_id, $service_id);
-    if ($stmt->execute()) {
+    $cardholder_name = htmlspecialchars($_POST['name']);
+    $card_number = htmlspecialchars($_POST['cardNumber']);
+    $expiry_date = htmlspecialchars($_POST['expiryDate']);
+    $cvv = htmlspecialchars($_POST['cvv']);
+
+    // Előfizetés rögzítése
+    $conn->begin_transaction();
+    try {
+        $stmt = $conn->prepare("INSERT INTO subscriptions (user_id, service_id, start_date, status) VALUES (?, ?, NOW(), 'active')");
+        $stmt->bind_param("ii", $user_id, $service_id);
+        $stmt->execute();
+        $subscription_id = $conn->insert_id;
+
+        // Fizetési adatok rögzítése
+        $stmt = $conn->prepare("INSERT INTO payment_details (user_id, subscription_id, cardholder_name, card_number, expiry_date, cvv) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("iissss", $user_id, $subscription_id, $cardholder_name, $card_number, $expiry_date, $cvv);
+        $stmt->execute();
+
+        $conn->commit();
         $_SESSION['message'] = 'Sikeresen előfizettél!';
         $_SESSION['message_type'] = 'success';
         header('Location: profile.php');
         exit();
-    } else {
+    } catch (Exception $e) {
+        $conn->rollback();
+        error_log("Hiba az előfizetés során: " . $e->getMessage());
         $_SESSION['message'] = 'Hiba történt az előfizetés során!';
         $_SESSION['message_type'] = 'danger';
     }
@@ -63,33 +81,232 @@ ob_end_flush();
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
-        .card {
-            border-radius: 15px;
-            transition: transform 0.3s, box-shadow 0.3s;
+        /* Szolgáltatási kártyák új dizájnja */
+        .service-container {
+            padding: 60px 0;
+            min-height: 100vh;
         }
 
-        .card:hover {
+        .service-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1a2e44;
+            text-align: center;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .service-card {
+            border: none;
+            border-radius: 20px;
+            background: white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.4s ease;
+            overflow: hidden;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .service-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-body {
+            padding: 25px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .card-text {
+            font-size: 1rem;
+            color: #7f8c8d;
+            text-align: center;
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+
+        .card-subtitle {
+            font-size: 1.2rem;
+            color: #e74c3c;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .btn-primary {
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(90deg, #2980b9, #3498db);
             transform: scale(1.05);
-            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        /* Fizetési modális ablak új dizájnja */
+        .modal-custom {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .modal-custom.show {
+            display: flex;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         .modal-content {
+            width: 400px;
+            background: #0c0f14;
+            box-shadow: 0px 187px 75px rgba(0, 0, 0, 0.01),
+                0px 105px 63px rgba(0, 0, 0, 0.05), 0px 47px 47px rgba(0, 0, 0, 0.09),
+                0px 12px 26px rgba(0, 0, 0, 0.1), 0px 0px 0px rgba(0, 0, 0, 0.1);
+            border-radius: 25px;
+            padding: 30px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .modal-header {
+            color: #d17842;
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #21262e;
+        }
+
+        .form .label {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            height: fit-content;
+        }
+
+        .form .label:has(input:focus) .title {
+            top: 0;
+            left: 0;
+            color: #d17842;
+        }
+
+        .form .label .title {
+            padding: 0 10px;
+            transition: all 300ms;
+            font-size: 12px;
+            color: #8b8e98;
+            font-weight: 600;
+            width: fit-content;
+            top: 14px;
+            position: relative;
+            left: 15px;
+            background: #0c0f14;
+        }
+
+        .form .input-field {
+            width: auto;
+            height: 50px;
+            text-indent: 15px;
             border-radius: 15px;
+            outline: none;
+            background-color: transparent;
+            border: 1px solid #21262e;
+            transition: all 0.3s;
+            caret-color: #d17842;
+            color: #aeaeae;
         }
 
-        .form-control {
-            border-radius: 10px;
+        .form .input-field:hover {
+            border-color: rgba(209, 121, 66, 0.5);
         }
 
-        .btn-primary,
-        .btn-success {
-            border-radius: 10px;
-            transition: background-color 0.3s, transform 0.3s;
+        .form .input-field:focus {
+            border-color: #d17842;
         }
 
-        .btn-primary:hover,
-        .btn-success:hover {
-            transform: scale(1.05);
+        .form .split {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            width: 100%;
+            gap: 15px;
+        }
+
+        .form .split label {
+            width: 130px;
+        }
+
+        .form .checkout-btn {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 25px;
+            font-weight: 700;
+            transition: all 0.3s cubic-bezier(0.15, 0.83, 0.66, 1);
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            border: none;
+            justify-content: center;
+            color: #fff;
+            border: 2px solid transparent;
+            background: #d17842;
+        }
+
+        .form .checkout-btn:hover {
+            color: #d17842;
+            border: 2px solid #d17842;
+            background: transparent;
         }
 
         /* Sikeres fizetés animáció */
@@ -130,16 +347,16 @@ ob_end_flush();
 </head>
 
 <body>
-    <div class="container mt-5">
-        <h2 class="text-center mb-4">Szolgáltatási csomagok</h2>
-        <div class="row">
+    <div class="service-container">
+        <h2 class="service-title">Szolgáltatási csomagok</h2>
+        <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-center">
             <?php foreach ($services as $service): ?>
-                <div class="col-md-4">
-                    <div class="card mb-4 shadow-sm">
+                <div class="col">
+                    <div class="service-card h-100">
                         <div class="card-body text-center">
                             <h5 class="card-title"><?php echo htmlspecialchars($service["service_name"]); ?></h5>
                             <p class="card-text"><?php echo nl2br(htmlspecialchars($service["service_description"])); ?></p>
-                            <h6 class="card-subtitle mb-2 text-muted"><?php echo number_format($service["service_price"], 0, ',', ' '); ?> Ft/hó</h6>
+                            <h6 class="card-subtitle"><?php echo number_format($service["service_price"], 0, ',', ' '); ?> Ft/hó</h6>
                             <button class="btn btn-primary mt-3 w-100 open-payment-modal"
                                 data-id="<?php echo $service["service_id"]; ?>"
                                 data-name="<?php echo htmlspecialchars($service["service_name"]); ?>"
@@ -153,38 +370,34 @@ ob_end_flush();
         </div>
     </div>
 
-    <!-- Fizetési modális ablak -->
-    <div class="modal fade" id="paymentModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Fizetés</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p>Választott csomag: <strong id="selectedPackageName"></strong></p>
-                    <p>Havi díj: <strong id="selectedPackagePrice"></strong> Ft</p>
-                    <form id="paymentForm" method="POST">
-                        <input type="hidden" name="service_id" id="serviceId">
-                        <div class="mb-3">
-                            <label for="cardNumber" class="form-label">Bankkártya szám</label>
-                            <input type="text" class="form-control" id="cardNumber" required pattern="\d{16}" placeholder="1234 5678 9012 3456">
-                            <small class="text-muted">Pontosan 16 számjegyből kell állnia.</small>
-                        </div>
-                        <div class="mb-3">
-                            <label for="cardExpiry" class="form-label">Lejárati dátum</label>
-                            <input type="text" class="form-control" id="cardExpiry" required placeholder="MM/YY">
-                            <small class="text-muted">Formátum: MM/YY, és nem lehet múltbeli dátum.</small>
-                        </div>
-                        <div class="mb-3">
-                            <label for="cardCVC" class="form-label">CVC</label>
-                            <input type="text" class="form-control" id="cardCVC" required pattern="\d{3}" placeholder="123">
-                            <small class="text-muted">Pontosan 3 számjegyből kell állnia.</small>
-                        </div>
-                        <button type="submit" name="subscribe" class="btn btn-success w-100">Fizetés</button>
-                    </form>
-                </div>
+    <!-- Új fizetési modális ablak -->
+    <div class="modal-custom" id="paymentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5>Fizetés - <span id="selectedPackageName"></span> (<span id="selectedPackagePrice"></span> Ft/hó)</h5>
             </div>
+            <form class="form" id="paymentForm" method="POST">
+                <input type="hidden" name="service_id" id="serviceId">
+                <label for="name" class="label">
+                    <span class="title">Kártyatulajdonos neve</span>
+                    <input class="input-field" type="text" name="name" placeholder="Teljes név" required>
+                </label>
+                <label for="serialCardNumber" class="label">
+                    <span class="title">Kártyaszám</span>
+                    <input id="serialCardNumber" class="input-field" type="number" name="cardNumber" placeholder="0000 0000 0000 0000" required>
+                </label>
+                <div class="split">
+                    <label for="ExDate" class="label">
+                        <span class="title">Lejárati dátum</span>
+                        <input id="ExDate" class="input-field" type="text" name="expiryDate" placeholder="01/23" required>
+                    </label>
+                    <label for="cvv" class="label">
+                        <span class="title">CVV</span>
+                        <input id="cvv" class="input-field" type="number" name="cvv" placeholder="CVV" required>
+                    </label>
+                </div>
+                <button type="submit" name="subscribe" class="checkout-btn">Fizetés</button>
+            </form>
         </div>
     </div>
 
@@ -221,25 +434,32 @@ ob_end_flush();
                 $("#serviceId").val(serviceId);
                 $("#selectedPackageName").text(serviceName);
                 $("#selectedPackagePrice").text(new Intl.NumberFormat('hu-HU').format(servicePrice));
-                $("#paymentModal").modal("show");
+                $("#paymentModal").addClass("show");
+            });
+
+            // Modális ablak bezárása (pl. háttérre kattintással)
+            $(document).on("click", ".modal-custom", function(e) {
+                if (e.target === this) {
+                    $("#paymentModal").removeClass("show");
+                }
             });
 
             $("#paymentForm").on("submit", function(e) {
-                let cardNumber = $("#cardNumber").val();
+                let cardNumber = $("#serialCardNumber").val();
                 if (!/^\d{16}$/.test(cardNumber)) {
-                    alert("A bankkártya számnak pontosan 16 számjegyből kell állnia!");
+                    alert("A kártyaszámnak pontosan 16 számjegyből kell állnia!");
                     e.preventDefault();
                     return;
                 }
 
-                let cardExpiry = $("#cardExpiry").val();
-                if (!/^\d{2}\/\d{2}$/.test(cardExpiry)) {
+                let expiryDate = $("#ExDate").val();
+                if (!/^\d{2}\/\d{2}$/.test(expiryDate)) {
                     alert("A lejárati dátum formátuma nem megfelelő! Használd a MM/YY formátumot.");
                     e.preventDefault();
                     return;
                 }
 
-                let [month, year] = cardExpiry.split('/');
+                let [month, year] = expiryDate.split('/');
                 let currentDate = new Date();
                 let currentYear = currentDate.getFullYear() % 100;
                 let currentMonth = currentDate.getMonth() + 1;
@@ -249,15 +469,15 @@ ob_end_flush();
                     return;
                 }
 
-                let cardCVC = $("#cardCVC").val();
-                if (!/^\d{3}$/.test(cardCVC)) {
-                    alert("A CVC kódnak pontosan 3 számjegyből kell állnia!");
+                let cvv = $("#cvv").val();
+                if (!/^\d{3}$/.test(cvv)) {
+                    alert("A CVV kódnak pontosan 3 számjegyből kell állnia!");
                     e.preventDefault();
                     return;
                 }
 
                 // Sikeres fizetés animáció megjelenítése
-                $("#paymentModal").modal("hide");
+                $("#paymentModal").removeClass("show");
                 $("#paymentSuccess").addClass("show");
 
                 // Animáció eltüntetése 3 másodperc után
