@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Már 11. 16:29
+-- Létrehozás ideje: 2025. Már 12. 09:36
 -- Kiszolgáló verziója: 10.4.32-MariaDB
 -- PHP verzió: 8.2.12
 
@@ -88,7 +88,7 @@ INSERT INTO `appointments` (`id`, `status`, `description`, `user_id`, `title`, `
 (24, 'pending', 'Veritatis est aut voluptatibus asperiores veritatis occaecati quas.', 10, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
 (25, 'canceled', 'Fugit nemo nulla sunt.', 9, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
 (48, 'confirmed', 'asdadasdasdad', 106, 'Valami', '2025-03-11 07:00:00', '2025-03-11 07:30:00', 77),
-(50, 'pending', 'asdasdasdsadsa', 106, 'valami', '2025-03-13 07:00:00', '2025-03-13 07:30:00', 77),
+(50, 'confirmed', 'asdasdasdsadsa', 106, 'valami', '2025-03-13 07:00:00', '2025-03-13 07:30:00', 77),
 (51, 'canceled', 'asdsadassad', 106, 'sadasdsad', '2025-03-11 15:00:00', '2025-03-11 15:30:00', 77);
 
 -- --------------------------------------------------------
@@ -377,8 +377,8 @@ CREATE TABLE `payment_details` (
 --
 
 INSERT INTO `payment_details` (`id`, `user_id`, `subscription_id`, `cardholder_name`, `card_number`, `expiry_date`, `cvv`, `created_at`) VALUES
-(11, 106, 30, 'Tac András', '1234567891234567', '08/29', '357', '2025-03-11 15:09:18'),
-(14, 108, 33, 'Kis Pista', '0123456789123456', '09/29', '927', '2025-03-11 15:13:44');
+(14, 108, 33, 'Kis Pista', '0123456789123456', '09/29', '927', '2025-03-11 15:13:44'),
+(17, 106, 37, 'Tac András', '1234567891234567', '08/30', '267', '2025-03-12 08:11:35');
 
 -- --------------------------------------------------------
 
@@ -495,8 +495,8 @@ CREATE TABLE `subscriptions` (
 --
 
 INSERT INTO `subscriptions` (`id`, `user_id`, `service_id`, `start_date`, `end_date`, `status`) VALUES
-(30, 106, 2, '2025-03-11 15:09:18', NULL, 'active'),
-(33, 108, 5, '2025-03-11 15:13:44', NULL, 'active');
+(33, 108, 5, '2025-03-11 15:13:44', NULL, 'active'),
+(37, 106, 6, '2025-03-12 08:11:35', NULL, 'active');
 
 -- --------------------------------------------------------
 
@@ -813,7 +813,7 @@ ALTER TABLE `newsletters`
 -- AUTO_INCREMENT a táblához `payment_details`
 --
 ALTER TABLE `payment_details`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT a táblához `personal_acces_token`
@@ -837,7 +837,7 @@ ALTER TABLE `service_users`
 -- AUTO_INCREMENT a táblához `subscriptions`
 --
 ALTER TABLE `subscriptions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
 -- AUTO_INCREMENT a táblához `users`
