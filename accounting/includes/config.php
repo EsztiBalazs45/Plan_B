@@ -5,10 +5,10 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 // Database configuration
-define('DB_HOST', value: 'localhost');
-define('DB_USER', value: 'root');
-define('DB_PASS', value: '');
-define('DB_NAME', value: 'asd');
+define('DB_HOST', 'localhost');
+define('DB_USER', 'root');
+define('DB_PASS', '');
+define('DB_NAME', 'asd');
 
 try {
     $conn = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USER, DB_PASS);
@@ -31,7 +31,6 @@ function redirectIfNotLoggedIn() {
     }
 }
 
-
 function sanitize($input) {
     return htmlspecialchars(trim($input), ENT_QUOTES, 'UTF-8');
 }
@@ -40,16 +39,16 @@ function clearMessages() {
     unset($_SESSION['error']);
     unset($_SESSION['success']);
 }
+
 function isAdmin() {
     if (!isset($_SESSION['user_id'])) {
         return false; // Nincs bejelentkezett felhasználó
     }
     
-    require_once 'Bozont_Cucc/accounting/database/admins'; // Adatbázis kapcsolat
-    
+    global $conn; // Hozzáférés a globális $conn változóhoz
     $stmt = $conn->prepare("SELECT role FROM users WHERE id = ? LIMIT 1");
     $stmt->execute([$_SESSION['user_id']]);
-    $user = $stmt->fetch();
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
     return ($user && $user['role'] === 'admin');
 }
@@ -61,7 +60,6 @@ function debug($data) {
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
-
 
 // Add debug info
 if (isLoggedIn()) {
@@ -77,7 +75,7 @@ if (isset($_SESSION['user_id'])) {
     try {
         $stmt = $conn->prepare("SELECT id, name, email FROM users WHERE id = ?");
         $stmt->execute([$_SESSION['user_id']]);
-        $user = $stmt->fetch();
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
         if ($user) {
             $_SESSION['user_id'] = $user['id'];
             $_SESSION['user_name'] = $user['name'];
@@ -87,5 +85,4 @@ if (isset($_SESSION['user_id'])) {
         error_log("Error refreshing user session: " . $e->getMessage());
     }
 }
-
 ?>

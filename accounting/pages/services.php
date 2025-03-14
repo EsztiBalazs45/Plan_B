@@ -177,8 +177,13 @@ ob_end_flush();
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         .form {
@@ -215,7 +220,7 @@ ob_end_flush();
             margin: 0 10px;
         }
 
-        .separator > p {
+        .separator>p {
             word-break: keep-all;
             text-align: center;
             font-weight: 600;
@@ -303,32 +308,6 @@ ob_end_flush();
         .input_field[type=number] {
             -moz-appearance: textfield;
         }
-
-        .payment-success {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #5de2a3;
-            color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
-            display: none;
-            z-index: 1000;
-        }
-
-        .payment-success.show {
-            display: block;
-            animation: fadeInOut 3s ease-in-out;
-        }
-
-        @keyframes fadeInOut {
-            0% { opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { opacity: 0; }
-        }
     </style>
 </head>
 
@@ -359,22 +338,6 @@ ob_end_flush();
     <div class="modal" id="paymentModal">
         <form class="form" id="paymentForm" method="POST">
             <input type="hidden" name="service_id" id="serviceId">
-            <div class="payment--options">
-                <button name="paypal" type="button">
-                    <img src="accounting/assets/icons/paypal.png" alt="PayPal" style="height: 18px; width: auto;">
-                </button>
-                <button name="apple-pay" type="button">
-                    <img src="accounting/assets/icons/apple-pay.png" alt="Apple Pay" style="height: 18px; width: auto;">
-                </button>
-                <button name="google-pay" type="button">
-                    <img src="accounting/assets/icons/Google_Pay.png" alt="Google Pay" style="height: 22px; width: auto;">
-                </button>
-            </div>
-            <div class="separator">
-                <hr class="line">
-                <p>or pay using credit card</p>
-                <hr class="line">
-            </div>
             <div class="credit-card-info--form">
                 <div class="input_container">
                     <label for="name" class="input_label">Card holder full name</label>
@@ -398,32 +361,33 @@ ob_end_flush();
 
     <script>
         $(document).ready(function() {
+            // Modal megnyitása
             $(document).on("click", ".open-payment-modal", function() {
                 let serviceId = $(this).data("id");
-                let serviceName = $(this).data("name");
-                let servicePrice = $(this).data("price");
                 $("#serviceId").val(serviceId);
                 $("#paymentModal").addClass("show");
             });
 
+            // Modal bezárása, ha a modalon kívülre kattintanak
             $(document).on("click", function(e) {
                 if ($(e.target).is("#paymentModal") && !$(e.target).closest(".form").length) {
                     $("#paymentModal").removeClass("show");
                 }
             });
 
+            // Űrlap beküldése ellenőrzéssel
             $("#paymentForm").on("submit", function(e) {
+                e.preventDefault(); // Megakadályozzuk az alapértelmezett küldést
+
                 let cardNumber = $("#cardNumber").val();
                 if (!/^\d{16}$/.test(cardNumber)) {
                     alert("A kártyaszámnak pontosan 16 számjegyből kell állnia!");
-                    e.preventDefault();
                     return;
                 }
 
                 let expiryDate = $("#expiryDate").val();
                 if (!/^\d{2}\/\d{2}$/.test(expiryDate)) {
                     alert("A lejárati dátum formátuma nem megfelelő! Használd a MM/YY formátumot.");
-                    e.preventDefault();
                     return;
                 }
 
@@ -433,22 +397,18 @@ ob_end_flush();
                 let currentMonth = currentDate.getMonth() + 1;
                 if (year < currentYear || (year == currentYear && month < currentMonth)) {
                     alert("A megadott lejárati dátum múltbeli dátum!");
-                    e.preventDefault();
                     return;
                 }
 
                 let cvv = $("#cvv").val();
                 if (!/^\d{3}$/.test(cvv)) {
                     alert("A CVV kódnak pontosan 3 számjegyből kell állnia!");
-                    e.preventDefault();
                     return;
                 }
 
+                // Modal bezárása és űrlap elküldése
                 $("#paymentModal").removeClass("show");
-                $("#paymentSuccess").addClass("show");
-                setTimeout(function() {
-                    $("#paymentSuccess").removeClass("show");
-                }, 3000);
+                this.submit(); // Az űrlap elküldése
             });
         });
     </script>
