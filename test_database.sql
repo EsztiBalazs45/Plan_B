@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Már 16. 16:07
+-- Létrehozás ideje: 2025. Már 16. 16:30
 -- Kiszolgáló verziója: 10.4.32-MariaDB
 -- PHP verzió: 8.2.12
 
@@ -90,7 +90,11 @@ INSERT INTO `appointments` (`id`, `status`, `description`, `user_id`, `title`, `
 (48, 'confirmed', 'asdadasdasdad', 106, 'Valami', '2025-03-11 07:00:00', '2025-03-11 07:30:00', 77),
 (50, 'confirmed', 'asdasdasdsadsa', 106, 'valami', '2025-03-13 07:00:00', '2025-03-13 07:30:00', 77),
 (54, 'canceled', 'asdadsasdadasd', 106, 'valami', '2025-03-21 09:00:00', '2025-03-21 09:30:00', 77),
-(55, 'confirmed', 'valami mert nem tudom hogy mit irjak ide', 106, 'megbeszélés', '2025-03-19 08:00:00', '2025-03-19 08:30:00', 77);
+(55, 'confirmed', 'valami mert nem tudom hogy mit irjak ide', 106, 'megbeszélés', '2025-03-19 08:00:00', '2025-03-19 08:30:00', 77),
+(56, 'canceled', 'megbeszéltünk mindent telefonon', 108, 'Zárás megbeszélést', '2025-03-18 11:00:00', '2025-03-18 11:30:00', 78),
+(58, 'confirmed', 'adadsdsadadsadas', 106, 'valami', '2025-03-19 09:00:00', '2025-03-19 09:30:00', 77),
+(59, 'canceled', 'asdadasd', 106, 'Proba', '2025-03-18 10:00:00', '2025-03-18 10:30:00', 77),
+(60, 'confirmed', 'valami', 106, 'proba', '2025-03-18 07:00:00', '2025-03-18 07:30:00', 77);
 
 -- --------------------------------------------------------
 
@@ -215,7 +219,8 @@ INSERT INTO `clients` (`id`, `user_id`, `CompanyName`, `tax_number`, `registrati
 (73, 6, 'Christelle Stoltenberg', '755171641', '333463617', '532 Blanda Rest Apt. 873\nLake Arnaldo, CO 62622-1868', 'Chester Bradtke', '240.757.0463', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (74, 5, 'Sandra Johnston', '766593340', '234166993', '730 Velma Extension Suite 851\nCedrickmouth, OK 32568', 'Mr. Constantin Hand II', '(458) 899-7490', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (75, 1, 'valami Kft', '410667237', '454582596', '96132 Romaguera Unions\nPort Hymanton, NY 85038-3910', 'Ms. Kacie Nicolas', '+1.937.620.6801', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(77, 106, 'Corki_repcsi Kft', '2145172185718', '945678213', 'Pécs Valami utca 27', 'Kis Pál', '+36303521472', NULL, NULL);
+(77, 106, 'Corki_repcsi Kft', '2145172185718', '945678213', 'Pécs Valami utca 27', 'Kis Pál', '+36303521472', NULL, NULL),
+(78, 108, 'Tham_Catch_Kft', '27560384-2-08', '5430689124', 'Budapest Sport utca 42', 'Kalapos Béla', '+36202546894', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -783,13 +788,13 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT a táblához `appointments`
 --
 ALTER TABLE `appointments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
 
 --
 -- AUTO_INCREMENT a táblához `clients`
 --
 ALTER TABLE `clients`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=78;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
 
 --
 -- AUTO_INCREMENT a táblához `dowloaddata`

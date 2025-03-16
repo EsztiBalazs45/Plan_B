@@ -16,6 +16,46 @@ $stmt = $conn->prepare("SELECT id, CompanyName FROM clients WHERE user_id = ? OR
 $stmt->execute([$user_id]);
 $clients = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+// Szabad időpontok keresése egy adott napra
+function getAvailableSlots($conn, $date) {
+    $start_hour = 7; // 07:00
+    $end_hour = 16; // 16:00
+    $interval = 30; // 30 perces intervallumok
+    $slots = [];
+    $date_start = new DateTime("$date $start_hour:00");
+    $date_end = new DateTime("$date $end_hour:00");
+
+    // Összes időpont lekérdezése az adott napra
+    $stmt = $conn->prepare("
+        SELECT start, end 
+        FROM appointments 
+        WHERE DATE(start) = ? AND status != 'canceled'
+    ");
+    $stmt->execute([$date]);
+    $booked_slots = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    while ($date_start <= $date_end) {
+        $slot_start = $date_start->format('Y-m-d H:i:s');
+        $date_start->modify("+{$interval} minutes");
+        $slot_end = $date_start->format('Y-m-d H:i:s');
+        $is_booked = false;
+
+        foreach ($booked_slots as $booked) {
+            if (
+                ($slot_start < $booked['end'] && $slot_end > $booked['start'])
+            ) {
+                $is_booked = true;
+                break;
+            }
+        }
+
+        if (!$is_booked) {
+            $slots[] = ['start' => $slot_start, 'end' => $slot_end];
+        }
+    }
+    return $slots;
+}
+
 // Időpontok kezelése
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['add_appointment']) || isset($_POST['edit_appointment'])) {
@@ -26,7 +66,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $end_time = $_POST['end_time'] ?? '';
         $client_id = $_POST['client_id'] ?? '';
         $description = $_POST['description'] ?? '';
-        $status = $_POST['status'] ?? 'pending'; // Alapértelmezett státusz
+        $status = $_POST['status'] ?? 'pending';
 
         $start = date('Y-m-d H:i:s', strtotime("$start_date $start_time"));
         $end = date('Y-m-d H:i:s', strtotime("$end_date $end_time"));
@@ -38,11 +78,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit();
         }
 
+        // Ütközés ellenőrzése az összes felhasználó időpontjával
         $stmt = $conn->prepare("
             SELECT COUNT(*) 
             FROM appointments 
-            WHERE user_id = ? 
-            AND status != 'canceled'
+            WHERE status != 'canceled'
             AND id != ?
             AND (
                 (start <= ? AND end > ?) OR 
@@ -51,7 +91,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             )
         ");
         $stmt->execute([
-            $user_id,
             isset($_POST['appointment_id']) ? $_POST['appointment_id'] : 0,
             $start,
             $start,
@@ -60,15 +99,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $start,
             $end
         ]);
-        if ($stmt->fetchColumn() > 0) {
-            $_SESSION['error'] = 'Ez az idősáv már foglalt!';
-            header('Location: appointments.php');
+        $conflict_count = $stmt->fetchColumn();
+
+        if ($conflict_count > 0) {
+            $_SESSION['conflict'] = [
+                'start_date' => $start_date,
+                'start_time' => $start_time,
+                'end_date' => $end_date,
+                'end_time' => $end_time,
+                'available_slots' => getAvailableSlots($conn, $start_date)
+            ];
+            header('Location: appointments.php?action=new');
             exit();
         }
 
         try {
             if (isset($_POST['add_appointment'])) {
-                $status = 'pending'; // Új időpontnál csak "pending" lehet
+                $status = 'pending';
                 $stmt = $conn->prepare("
                     INSERT INTO appointments (user_id, client_id, title, start, end, description, status)
                     VALUES (?, ?, ?, ?, ?, ?, ?)
@@ -269,6 +316,10 @@ ob_end_flush();
             color: #dc2626;
         }
 
+        .modal-content {
+            border-radius: 15px;
+        }
+
         @media (max-width: 768px) {
             body {
                 padding: 1rem;
@@ -431,6 +482,39 @@ ob_end_flush();
             </div>
             <?php unset($_SESSION['error']); ?>
         <?php endif; ?>
+
+        <!-- Ütközés esetén modal -->
+        <?php if (isset($_SESSION['conflict'])): ?>
+            <div class="modal fade" id="conflictModal" tabindex="-1" aria-labelledby="conflictModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="conflictModalLabel">Időpont ütközés</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>A kiválasztott időpont (<strong><?php echo date('Y.m.d H:i', strtotime($_SESSION['conflict']['start_date'] . ' ' . $_SESSION['conflict']['start_time'])); ?> - <?php echo date('H:i', strtotime($_SESSION['conflict']['end_date'] . ' ' . $_SESSION['conflict']['end_time'])); ?></strong>) már foglalt!</p>
+                            <h6>Szabad időpontok az adott napon:</h6>
+                            <?php if (!empty($_SESSION['conflict']['available_slots'])): ?>
+                                <ul class="list-group">
+                                    <?php foreach ($_SESSION['conflict']['available_slots'] as $slot): ?>
+                                        <li class="list-group-item">
+                                            <?php echo date('H:i', strtotime($slot['start'])) . ' - ' . date('H:i', strtotime($slot['end'])); ?>
+                                            <button class="btn btn-sm btn-primary float-end" onclick="selectSlot('<?php echo date('Y-m-d', strtotime($slot['start'])); ?>', '<?php echo date('H:i', strtotime($slot['start'])); ?>', '<?php echo date('Y-m-d', strtotime($slot['end'])); ?>', '<?php echo date('H:i', strtotime($slot['end'])); ?>')">Kiválaszt</button>
+                                        </li>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php else: ?>
+                                <p>Nincsenek szabad időpontok ezen a napon.</p>
+                            <?php endif; ?>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bezárás</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
     </div>
 
     <script>
@@ -452,7 +536,22 @@ ob_end_flush();
                     form.classList.add('was-validated');
                 }, false);
             });
+
+            // Modal automatikus megjelenítése ütközés esetén
+            <?php if (isset($_SESSION['conflict'])): ?>
+                const conflictModal = new bootstrap.Modal(document.getElementById('conflictModal'));
+                conflictModal.show();
+                <?php unset($_SESSION['conflict']); ?>
+            <?php endif; ?>
         });
+
+        function selectSlot(startDate, startTime, endDate, endTime) {
+            document.getElementById('start_date').value = startDate;
+            document.getElementById('start_time').value = startTime;
+            document.getElementById('end_date').value = endDate;
+            document.getElementById('end_time').value = endTime;
+            bootstrap.Modal.getInstance(document.getElementById('conflictModal')).hide();
+        }
     </script>
     <?php require_once '../includes/footer.php'; ?>
 </body>
