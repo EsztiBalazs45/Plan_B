@@ -45,7 +45,7 @@ try {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+            background: linear-gradient(135deg, #f0f4f8, #334155);
             font-family: 'Poppins', sans-serif;
             min-height: 100vh;
             color: #263238;
@@ -93,29 +93,44 @@ try {
             box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             animation: fadeInUp 0.5s ease-out;
+            position: relative;
         }
         .stat-card:hover {
             transform: translateY(-8px);
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
         }
-        .stat-card.bg-primary { background: #e3f2fd; color: #1976d2; }
-        .stat-card.bg-success { background: #e8f5e9; color: #2e7d32; }
-        .stat-card.bg-warning { background: #fff8e1; color: #f57c00; }
-        .stat-card.bg-info { background: #e0f7fa; color: #0288d1; }
+        .stat-card.bg-primary { 
+            background: #f0f4f8; 
+            color: #0d47a1; /* Sötétebb kék */
+        }
+        .stat-card.bg-success { 
+            background: #e8f5e9; 
+            color: #1b5e20; /* Sötétebb zöld */
+        }
+        .stat-card.bg-warning { 
+            background: #fff8e1; 
+            color: #e65100; /* Sötétebb narancs */
+        }
+        .stat-card.bg-info { 
+            background: #e0f7fa; 
+            color: #01579b; /* Sötétebb cián */
+        }
         .stat-card i {
             font-size: 2.5rem;
             margin-bottom: 1rem;
             opacity: 0.9;
         }
         .stat-card h3 {
-            font-weight: 600;
+            font-weight: 700;
             font-size: 2rem;
             margin-bottom: 0.5rem;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
         .stat-card p {
             font-size: 1rem;
-            font-weight: 500;
-            opacity: 0.8;
+            font-weight: 600;
+            opacity: 1;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
         .action-card {
             border: none;

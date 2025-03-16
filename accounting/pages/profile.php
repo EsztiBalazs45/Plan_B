@@ -21,8 +21,7 @@ if ($conn->connect_error) {
 }
 
 // Egyedi fetchAll függvény
-function fetchAll($result)
-{
+function fetchAll($result) {
     $rows = [];
     while ($row = $result->fetch_assoc()) {
         $rows[] = $row;
@@ -87,32 +86,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     // Handle subscription cancellation
-if (isset($_POST['cancel_subscription'])) {
-    $subscription_id = (int)$_POST['subscription_id'];
-    $conn->begin_transaction();
-    try {
-        // Először töröljük a payment_details rekordokat
-        $stmt = $conn->prepare("DELETE FROM payment_details WHERE subscription_id = ? AND user_id = ?");
-        $stmt->bind_param("ii", $subscription_id, $user_id);
-        $stmt->execute();
+    if (isset($_POST['cancel_subscription'])) {
+        $subscription_id = (int)$_POST['subscription_id'];
+        $conn->begin_transaction();
+        try {
+            $stmt = $conn->prepare("DELETE FROM payment_details WHERE subscription_id = ? AND user_id = ?");
+            $stmt->bind_param("ii", $subscription_id, $user_id);
+            $stmt->execute();
 
-        // Utána töröljük a subscriptions rekordot
-        $stmt = $conn->prepare("DELETE FROM subscriptions WHERE id = ? AND user_id = ?");
-        $stmt->bind_param("ii", $subscription_id, $user_id);
-        $stmt->execute();
+            $stmt = $conn->prepare("DELETE FROM subscriptions WHERE id = ? AND user_id = ?");
+            $stmt->bind_param("ii", $subscription_id, $user_id);
+            $stmt->execute();
 
-        $conn->commit();
-        $_SESSION['message'] = 'Előfizetés sikeresen lemondva és törölve!';
-        $_SESSION['message_type'] = 'success';
-        header('Location: profile.php');
-        exit();
-    } catch (Exception $e) {
-        $conn->rollback();
-        error_log("Hiba az előfizetés törlése során: " . $e->getMessage());
-        $_SESSION['message'] = 'Hiba történt az előfizetés törlése közben!';
-        $_SESSION['message_type'] = 'danger';
+            $conn->commit();
+            $_SESSION['message'] = 'Előfizetés sikeresen lemondva és törölve!';
+            $_SESSION['message_type'] = 'success';
+            header('Location: profile.php');
+            exit();
+        } catch (Exception $e) {
+            $conn->rollback();
+            error_log("Hiba az előfizetés törlése során: " . $e->getMessage());
+            $_SESSION['message'] = 'Hiba történt az előfizetés törlése közben!';
+            $_SESSION['message_type'] = 'danger';
+        }
     }
-}
+
     // Handle payment details update
     if (isset($_POST['update_payment'])) {
         $subscription_id = (int)$_POST['subscription_id'];
@@ -164,52 +162,146 @@ ob_end_flush();
 
 <!DOCTYPE html>
 <html lang="hu">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
+        body {
+            background: linear-gradient(135deg, #f0f4f8, #334155);
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            color: #263238;
+        }
+        .content-wrapper {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
         .card {
-            border-radius: 15px;
-            transition: transform 0.3s, box-shadow 0.3s;
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+            background: #ffffff;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeInUp 0.5s ease-out;
         }
-
         .card:hover {
-            transform: scale(1.05);
-            box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.2);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
         }
-
+        .card-header {
+            background: linear-gradient(135deg, #1976d2, #42a5f5);
+            color: #ffffff;
+            border-radius: 20px 20px 0 0;
+            padding: 1.5rem;
+            font-weight: 600;
+        }
+        .card-body {
+            padding: 2rem;
+        }
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border: 4px solid #1976d2;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        .profile-avatar:hover {
+            transform: scale(1.05);
+        }
+        .form-label {
+            font-weight: 500;
+            color: #263238;
+        }
         .form-control {
             border-radius: 10px;
+            border: 1px solid #b0bec5;
+            padding: 0.75rem;
+            transition: border-color 0.3s ease;
         }
-
-        .btn-primary,
-        .btn-danger {
-            border-radius: 10px;
-            transition: background-color 0.3s, transform 0.3s;
+        .form-control:focus {
+            border-color: #1976d2;
+            box-shadow: 0 0 5px rgba(25, 118, 210, 0.3);
         }
-
-        .btn-primary:hover,
-        .btn-danger:hover {
+        .btn {
+            border-radius: 50px;
+            padding: 0.6rem 1.8rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .btn:hover {
             transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
-
+        .btn-primary {
+            background: #1976d2;
+            border: none;
+        }
+        .btn-danger {
+            background: #d32f2f;
+            border: none;
+        }
+        .btn-secondary {
+            background: #607d8b;
+            border: none;
+        }
+        .btn-sm {
+            padding: 0.4rem 1rem;
+            font-size: 0.875rem;
+        }
+        .subscription-card {
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease;
+        }
+        .subscription-card:hover {
+            transform: translateY(-5px);
+        }
         .payment-details-form {
             display: none;
         }
-
         .payment-details-form.active {
             display: block;
         }
+        .alert {
+            border-radius: 10px;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .text-muted {
+            color: #78909c;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 768px) {
+            .content-wrapper {
+                padding: 1rem;
+            }
+            .card-body {
+                padding: 1.5rem;
+            }
+            .profile-avatar {
+                width: 120px;
+                height: 120px;
+            }
+            .btn {
+                padding: 0.5rem 1.2rem;
+            }
+        }
     </style>
 </head>
-
 <body>
-    <div class="container">
+    <div class="content-wrapper">
         <?php if (isset($_SESSION['message'])): ?>
             <div class="alert alert-<?php echo $_SESSION['message_type']; ?> alert-dismissible fade show" role="alert">
                 <?php echo $_SESSION['message']; ?>
@@ -217,19 +309,20 @@ ob_end_flush();
             </div>
             <?php unset($_SESSION['message'], $_SESSION['message_type']); ?>
         <?php endif; ?>
+
         <div class="row">
+            <!-- Profil összefoglaló -->
             <div class="col-md-4">
                 <div class="card mb-4">
                     <div class="card-body text-center">
-                        <img src="https://via.placeholder.com/150" alt="Profile" class="rounded-circle mb-3 profile-avatar">
                         <h4><?php echo htmlspecialchars($user['name']); ?></h4>
-                        <p class="text-muted"><?php echo ucfirst($user['role']); ?></p>
                         <p class="text-muted"><i class="fas fa-envelope"></i> <?php echo htmlspecialchars($user['email']); ?></p>
                         <p class="text-muted"><i class="fas fa-user"></i> <?php echo htmlspecialchars($user['username']); ?></p>
                     </div>
                 </div>
             </div>
 
+            <!-- Profil szerkesztése és egyéb szekciók -->
             <div class="col-md-8">
                 <!-- Profil szerkesztése -->
                 <div class="card mb-4">
@@ -262,12 +355,12 @@ ob_end_flush();
                     </div>
                     <div class="card-body">
                         <?php if (empty($subscriptions)): ?>
-                            <p>Nincs aktív előfizetésed. <a href="services.php">Válassz egyet itt!</a></p>
+                            <p class="text-muted">Nincs aktív előfizetésed. <a href="services.php" class="btn btn-primary btn-sm">Válassz egyet itt!</a></p>
                         <?php else: ?>
                             <div class="row">
                                 <?php foreach ($subscriptions as $sub): ?>
-                                    <div class="col-md-6">
-                                        <div class="card mb-3">
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card subscription-card">
                                             <div class="card-body">
                                                 <h6><?php echo htmlspecialchars($sub['service_name']); ?></h6>
                                                 <p>Kezdete: <?php echo date('Y-m-d', strtotime($sub['start_date'])); ?></p>
@@ -277,11 +370,11 @@ ob_end_flush();
                                                     <p>Kártyaszám: ****-****-****-<?php echo substr(htmlspecialchars($sub['card_number']), -4); ?></p>
                                                     <p>Lejárat: <?php echo htmlspecialchars($sub['expiry_date']); ?></p>
                                                     <p>CVV: ***</p>
-                                                    <button class="btn btn-primary mt-2 edit-payment-btn" data-subscription-id="<?php echo $sub['id']; ?>">Fizetési adatok szerkesztése</button>
+                                                    <button class="btn btn-primary btn-sm mt-2 edit-payment-btn" data-subscription-id="<?php echo $sub['id']; ?>">Fizetési adatok szerkesztése</button>
                                                 <?php endif; ?>
-                                                <form method="POST" style="margin-top: 10px;">
+                                                <form method="POST" class="mt-2">
                                                     <input type="hidden" name="subscription_id" value="<?php echo $sub['id']; ?>">
-                                                    <button type="submit" name="cancel_subscription" class="btn btn-danger" onclick="return confirm('Biztosan lemondod ezt az előfizetést?');">Lemondás</button>
+                                                    <button type="submit" name="cancel_subscription" class="btn btn-danger btn-sm" onclick="return confirm('Biztosan lemondod ezt az előfizetést?');">Lemondás</button>
                                                 </form>
                                             </div>
                                         </div>
@@ -305,8 +398,8 @@ ob_end_flush();
                                                     <label for="cvv_<?php echo $sub['id']; ?>" class="form-label">CVV</label>
                                                     <input type="number" class="form-control" id="cvv_<?php echo $sub['id']; ?>" name="cvv" value="<?php echo htmlspecialchars($sub['cvv'] ?? ''); ?>" required>
                                                 </div>
-                                                <button type="submit" name="update_payment" class="btn btn-primary">Mentés</button>
-                                                <button type="button" class="btn btn-secondary cancel-edit-btn" data-subscription-id="<?php echo $sub['id']; ?>">Mégse</button>
+                                                <button type="submit" name="update_payment" class="btn btn-primary btn-sm">Mentés</button>
+                                                <button type="button" class="btn btn-secondary btn-sm cancel-edit-btn" data-subscription-id="<?php echo $sub['id']; ?>">Mégse</button>
                                             </form>
                                         </div>
                                     </div>
@@ -385,5 +478,4 @@ ob_end_flush();
 
     <?php require_once '../includes/footer.php'; ?>
 </body>
-
 </html>

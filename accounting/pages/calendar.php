@@ -20,10 +20,156 @@ $clients = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>Naptár</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/hu.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        body {
+            background: linear-gradient(135deg, #f9fafb, #334155);
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            color: #374151;
+            padding: 2rem;
+        }
+        .content-wrapper {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .calendar-container {
+            background: #ffffff;
+            border-radius: 25px;
+            padding: 2rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+            height: calc(100vh - 120px);
+            animation: fadeInUp 0.5s ease-out;
+            border: 1px solid #e5e7eb;
+        }
+        #calendar {
+            height: 100%;
+        }
+        /* FullCalendar testreszabása */
+        .fc-header-toolbar {
+            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+            padding: 1rem;
+            border-radius: 15px 15px 0 0;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        .fc-toolbar-title {
+            color: #1e3a8a;
+            font-weight: 600;
+            font-size: 1.5rem;
+        }
+        .fc-button {
+            border-radius: 10px !important;
+            padding: 0.5rem 1rem !important;
+            font-size: 0.9rem !important;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: #60a5fa !important;
+            border: none !important;
+            color: #ffffff !important;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        .fc-button:hover {
+            background: #3b82f6 !important;
+            transform: scale(1.05);
+        }
+        .fc-button-primary {
+            background: #10b981 !important;
+        }
+        .fc-button-primary:hover {
+            background: #059669 !important;
+        }
+        .fc-customAddButton-button {
+            margin-left: 0.5rem;
+            background: #f97316 !important;
+        }
+        .fc-customAddButton-button:hover {
+            background: #ea580c !important;
+        }
+        /* Idősávok és napok */
+        .fc-timegrid-slot {
+            height: 45px !important;
+            background: #f9fafb;
+            border-color: #e5e7eb;
+        }
+        .fc-col-header-cell {
+            background: #dbeafe;
+            color: #1e3a8a;
+            font-weight: 600;
+            padding: 0.75rem;
+            border-bottom: 2px solid #bfdbfe;
+        }
+        .fc-daygrid-day-number {
+            color: #6b7280;
+            font-size: 1rem;
+            font-weight: 400;
+        }
+        .fc-daygrid-day {
+            background: #ffffff;
+            transition: background 0.3s ease;
+        }
+        .fc-daygrid-day:hover {
+            background: #f1f5f9;
+        }
+        /* Események testreszabása */
+        .fc-event {
+            border-radius: 10px;
+            padding: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 400;
+            background: #f97316;
+            border: none;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .fc-event:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+        .fc-event-time {
+            font-weight: 600;
+            color: #ffffff;
+        }
+        .fc-event-title {
+            color: #fefcbf;
+            white-space: normal;
+        }
+        /* Reszponzivitás */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+            .calendar-container {
+                padding: 1rem;
+                height: calc(100vh - 100px);
+            }
+            .fc-header-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .fc-toolbar-chunk {
+                margin-bottom: 0.5rem;
+            }
+            .fc-button {
+                padding: 0.4rem 0.8rem !important;
+                font-size: 0.85rem !important;
+            }
+            .fc-timegrid-slot {
+                height: 35px !important;
+            }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
 <body>
     <div class="content-wrapper">
@@ -31,109 +177,6 @@ $clients = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <div id="calendar"></div>
         </div>
     </div>
-
-    <style>
-        /* Alapvető elrendezés */
-        .content-wrapper {
-            padding: 2rem;
-            background: #f4f6f9; /* Halvány háttér a kontraszt növelésére */
-        }
-        .calendar-container {
-            max-width: 1200px; /* Fix szélesség a jobb olvashatóság érdekében */
-            margin: 0 auto;
-            padding: 25px;
-            background: #ffffff;
-            border-radius: 20px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); /* Finomabb árnyék */
-            height: calc(100vh - 120px); /* Magasság optimalizálása */
-        }
-        #calendar {
-            height: 100%;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modernebb betűtípus */
-        }
-
-        /* FullCalendar testreszabása */
-        .fc-header-toolbar {
-            padding: 10px 20px;
-            background: #ffffff;
-            border-bottom: 1px solid #e9ecef;
-            margin-bottom: 15px;
-        }
-        .fc-button {
-            border-radius: 8px !important;
-            padding: 8px 16px !important;
-            font-size: 14px !important;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: all 0.2s ease;
-        }
-        .fc-button-primary {
-            background-color: #007bff !important;
-            border-color: #007bff !important;
-        }
-        .fc-button-primary:hover {
-            background-color: #0056b3 !important;
-            border-color: #0056b3 !important;
-        }
-        .fc-customAddButton-button {
-            margin-left: 10px;
-        }
-
-        /* Idősávok és napok */
-        .fc-timegrid-slot {
-            height: 40px !important; /* Magasabb idősávok a jobb átláthatóságért */
-            border-color: #e9ecef;
-        }
-        .fc-col-header-cell {
-            background: #f8f9fa;
-            color: #333;
-            font-weight: 600;
-            padding: 10px;
-            border-bottom: 2px solid #dee2e6;
-        }
-        .fc-daygrid-day-number {
-            font-size: 14px;
-            color: #495057;
-        }
-
-        /* Események testreszabása */
-        .fc-event {
-            border-radius: 6px;
-            padding: 4px 8px;
-            font-size: 14px;
-            font-weight: 500;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease;
-        }
-        .fc-event:hover {
-            transform: translateY(-2px); /* Kis kiemelés hovernél */
-        }
-        .fc-event-time {
-            font-weight: 600;
-        }
-        .fc-event-title {
-            white-space: normal; /* Szöveg tördelése, ha hosszú */
-        }
-
-        /* Reszponzivitás */
-        @media (max-width: 768px) {
-            .calendar-container {
-                padding: 15px;
-                height: calc(100vh - 100px);
-            }
-            .fc-header-toolbar {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .fc-toolbar-chunk {
-                margin-bottom: 10px;
-            }
-            .fc-button {
-                padding: 6px 12px !important;
-                font-size: 12px !important;
-            }
-        }
-    </style>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -161,12 +204,13 @@ $clients = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 selectable: false,
                 editable: false,
                 events: 'get_events.php',
-                validRange: { start: new Date() },
+                validRange: {
+                    start: new Date()
+                },
                 eventClick: function(info) {
                     window.location.href = 'appointments.php?action=edit&id=' + info.event.id;
                 },
                 eventContent: function(arg) {
-                    // Esemény tartalmának testreszabása
                     return {
                         html: `
                             <div>

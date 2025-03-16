@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Már 12. 09:36
+-- Létrehozás ideje: 2025. Már 16. 16:07
 -- Kiszolgáló verziója: 10.4.32-MariaDB
 -- PHP verzió: 8.2.12
 
@@ -89,7 +89,8 @@ INSERT INTO `appointments` (`id`, `status`, `description`, `user_id`, `title`, `
 (25, 'canceled', 'Fugit nemo nulla sunt.', 9, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
 (48, 'confirmed', 'asdadasdasdad', 106, 'Valami', '2025-03-11 07:00:00', '2025-03-11 07:30:00', 77),
 (50, 'confirmed', 'asdasdasdsadsa', 106, 'valami', '2025-03-13 07:00:00', '2025-03-13 07:30:00', 77),
-(51, 'canceled', 'asdsadassad', 106, 'sadasdsad', '2025-03-11 15:00:00', '2025-03-11 15:30:00', 77);
+(54, 'canceled', 'asdadsasdadasd', 106, 'valami', '2025-03-21 09:00:00', '2025-03-21 09:30:00', 77),
+(55, 'confirmed', 'valami mert nem tudom hogy mit irjak ide', 106, 'megbeszélés', '2025-03-19 08:00:00', '2025-03-19 08:30:00', 77);
 
 -- --------------------------------------------------------
 
@@ -213,7 +214,7 @@ INSERT INTO `clients` (`id`, `user_id`, `CompanyName`, `tax_number`, `registrati
 (72, 7, 'Elouise Heathcote', '891254139', '263463636', '34647 Kasey Fords\nTremblayfort, ID 69091', 'Anissa White', '(315) 215-6135', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (73, 6, 'Christelle Stoltenberg', '755171641', '333463617', '532 Blanda Rest Apt. 873\nLake Arnaldo, CO 62622-1868', 'Chester Bradtke', '240.757.0463', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (74, 5, 'Sandra Johnston', '766593340', '234166993', '730 Velma Extension Suite 851\nCedrickmouth, OK 32568', 'Mr. Constantin Hand II', '(458) 899-7490', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(75, 1, 'Cathrine Veum', '410667237', '454582596', '96132 Romaguera Unions\nPort Hymanton, NY 85038-3910', 'Ms. Kacie Nicolas', '+1.937.620.6801', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
+(75, 1, 'valami Kft', '410667237', '454582596', '96132 Romaguera Unions\nPort Hymanton, NY 85038-3910', 'Ms. Kacie Nicolas', '+1.937.620.6801', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (77, 106, 'Corki_repcsi Kft', '2145172185718', '945678213', 'Pécs Valami utca 27', 'Kis Pál', '+36303521472', NULL, NULL);
 
 -- --------------------------------------------------------
@@ -605,7 +606,7 @@ INSERT INTO `users` (`id`, `name`, `username`, `email`, `role`, `email_verified_
 (81, 'Juliana Durgan', 'lorena87', 'donnelly.donavon@example.com', 'user', '2025-02-25 15:18:48', '$2y$12$G5HgiiilYqaMdvbV5ZUPLetbrxq5F8RwljjBH3VuTy8zg5uf1kLb.', 'PDkztS8app', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (82, 'Mr. Hilton Nader PhD', 'sherman.cruickshank', 'anderson.carlie@example.com', 'user', '2025-02-25 15:18:48', '$2y$12$G5HgiiilYqaMdvbV5ZUPLetbrxq5F8RwljjBH3VuTy8zg5uf1kLb.', 'RHI9pBM9bQ', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (83, 'Quinten Davis', 'kirlin.horace', 'esawayn@example.net', 'user', '2025-02-25 15:18:48', '$2y$12$G5HgiiilYqaMdvbV5ZUPLetbrxq5F8RwljjBH3VuTy8zg5uf1kLb.', 'v677dUMDdA', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(84, 'Keshawn Mertz', 'powlowski.myrtle', 'alfonzo79@example.org', 'admin', '2025-02-25 15:18:48', '$2y$12$G5HgiiilYqaMdvbV5ZUPLetbrxq5F8RwljjBH3VuTy8zg5uf1kLb.', '7v5cbHgP765rHqMKLlOjjsVhOyVmnTYKy778uw85w3OXPI5ZBiseqW0wHFrx', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
+(84, 'Keshawn Mertz', 'powlowski.myrtle', 'alfonzo79@example.org', 'user', '2025-02-25 15:18:48', '$2y$12$G5HgiiilYqaMdvbV5ZUPLetbrxq5F8RwljjBH3VuTy8zg5uf1kLb.', '7v5cbHgP765rHqMKLlOjjsVhOyVmnTYKy778uw85w3OXPI5ZBiseqW0wHFrx', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (85, 'Paula Davis', 'pprosacco', 'ovonrueden@example.net', 'user', '2025-02-25 15:18:48', '$2y$12$G5HgiiilYqaMdvbV5ZUPLetbrxq5F8RwljjBH3VuTy8zg5uf1kLb.', 'A7wfcD7QOK', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (86, 'Ms. Deborah Marquardt III', 'phuels', 'kbarrows@example.net', 'user', '2025-02-25 15:18:48', '$2y$12$G5HgiiilYqaMdvbV5ZUPLetbrxq5F8RwljjBH3VuTy8zg5uf1kLb.', 'oePn2Ni26V', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (87, 'Kayli Yundt', 'tabshire', 'gottlieb.toney@example.com', 'user', '2025-02-25 15:18:48', '$2y$12$G5HgiiilYqaMdvbV5ZUPLetbrxq5F8RwljjBH3VuTy8zg5uf1kLb.', 'QTDqMbEPik', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
@@ -622,10 +623,9 @@ INSERT INTO `users` (`id`, `name`, `username`, `email`, `role`, `email_verified_
 (98, 'Dr. Jadyn Rogahn DDS', 'eleonore36', 'legros.paige@example.net', 'user', '2025-02-25 15:18:48', '$2y$12$G5HgiiilYqaMdvbV5ZUPLetbrxq5F8RwljjBH3VuTy8zg5uf1kLb.', 'j2zYgHblaw', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (99, 'Prof. Deshaun Marquardt MD', 'brown.uriel', 'bell89@example.org', 'user', '2025-02-25 15:18:48', '$2y$12$G5HgiiilYqaMdvbV5ZUPLetbrxq5F8RwljjBH3VuTy8zg5uf1kLb.', '7hoakrUMhp', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (100, 'Mrs. Brooke Beier V', 'zboncak.alessandro', 'merritt41@example.com', 'user', '2025-02-25 15:18:48', '$2y$12$G5HgiiilYqaMdvbV5ZUPLetbrxq5F8RwljjBH3VuTy8zg5uf1kLb.', 'iUqxtJdGPe', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(101, 'asdads', 'cat', 'tanklr@gmail.com', 'user', NULL, '$2y$10$sttg/PN9U3RAfiTCnqSst.UhjXM9Iewv9Kv5y3RxeKJPR1HxjrY7K', NULL, NULL, NULL),
 (102, 'kis andras', 'asdasd', 'andras@jedlik.eu', 'user', NULL, '$2y$10$jss4mJeZeumuxN46mE6qteGwdb2XJ2oq0QsrVAIO7ANaQa8.6BlUy', NULL, NULL, NULL),
 (103, 'kalap tamás', 'Kalapos', 'kalap@asd.hu', 'user', NULL, '$2y$10$/nrCeqHNM.zgYD0/No0T1eStHU.YnIIN.mmD..IFNbuESOiOXQ9oO', NULL, NULL, NULL),
-(105, 'Kulcs József', 'Kulacs', 'Kulcsa@asd.com', 'admin', NULL, '$2y$10$Lf1ZSos4h2WJ1xIT1HRU6Opx4GWU2JBbPEc/5z9FXkh2/VyTDR0Ta', NULL, NULL, NULL),
+(105, 'Kulcs József', 'Kulacs', 'Kulcsa@asd.com', 'user', NULL, '$2y$10$Lf1ZSos4h2WJ1xIT1HRU6Opx4GWU2JBbPEc/5z9FXkh2/VyTDR0Ta', NULL, NULL, NULL),
 (106, 'Tac András', 'ZicZac', 'tictac@jedlik.hu', 'admin', NULL, '$2y$10$wYqjESQ793BG1QnUk.EGi.YzqDy3ybK534KxuOaMn2.dGP7HU0eke', NULL, NULL, NULL),
 (107, 'Kala Pál', 'kalap', 'kala@gamil.com', 'user', NULL, '$2y$10$4So5HV/woIrefXFOC75bnuJjzYNXOkzs72v8xB0v5iLF3K7n/1GJ2', NULL, NULL, NULL),
 (108, 'Kis Pista', 'Pifta', 'Pistike@gmail.com', 'user', NULL, '$2y$10$9mhHAae1HoM44PQolW0Rvez.HlWAPC.gcGEch7YP9QUIIy3KcO.sa', NULL, NULL, NULL);
@@ -783,7 +783,7 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT a táblához `appointments`
 --
 ALTER TABLE `appointments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=52;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=56;
 
 --
 -- AUTO_INCREMENT a táblához `clients`

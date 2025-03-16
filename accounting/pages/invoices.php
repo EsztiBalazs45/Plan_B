@@ -9,5 +9,13 @@ redirectIfNotLoggedIn();
         Ez a funkció fejlesztés alatt áll.
     </div>
 </div>
+<style>
+    body {
+        background: linear-gradient(135deg, #f0f4f8, #334155);
+        font-family: 'Poppins', sans-serif;
+        min-height: 100vh;
+        color: #263238;
+    }
+</style>
 
 <?php require_once '../includes/footer.php'; ?>
