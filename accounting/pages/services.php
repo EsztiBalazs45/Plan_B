@@ -77,33 +77,36 @@ ob_end_flush();
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         body {
-            background: linear-gradient(135deg, #f0f4f8, #334155);
+            background: linear-gradient(135deg, #f8fafc, #334155);
             font-family: 'Poppins', sans-serif;
             min-height: 100vh;
-            color: #263238;
+            color: #1e293b;
         }
 
         .service-container {
-            padding: 60px 0;
+            padding: 60px 20px;
             min-height: 100vh;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
         .service-title {
             font-size: 2.5rem;
             font-weight: 700;
-            color: #1a2e44;
+            color: #1e293b;
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 50px;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1.5px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
         .service-card {
             border: none;
             border-radius: 20px;
-            background: white;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            transition: all 0.4s ease;
+            background: #ffffff;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
             overflow: hidden;
             height: 100%;
             display: flex;
@@ -111,21 +114,22 @@ ob_end_flush();
         }
 
         .service-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
         }
 
         .card-body {
-            padding: 25px;
+            padding: 30px;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            align-items: center;
         }
 
         .card-title {
             font-size: 1.8rem;
-            color: #2c3e50;
+            color: #1e40af;
             font-weight: 600;
             margin-bottom: 15px;
             text-align: center;
@@ -133,34 +137,35 @@ ob_end_flush();
 
         .card-text {
             font-size: 1rem;
-            color: #7f8c8d;
+            color: #64748b;
             text-align: center;
             margin-bottom: 20px;
             flex-grow: 1;
         }
 
         .card-subtitle {
-            font-size: 1.2rem;
-            color: #e74c3c;
+            font-size: 1.3rem;
+            color: #e11d48;
             font-weight: 700;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .btn-primary {
-            border-radius: 25px;
-            padding: 12px 30px;
+            border-radius: 50px;
+            padding: 12px 35px;
             font-size: 1.1rem;
             font-weight: 500;
-            background: linear-gradient(90deg, #3498db, #2980b9);
+            background: linear-gradient(90deg, #3b82f6, #1e40af);
             border: none;
             transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
         }
 
         .btn-primary:hover {
-            background: linear-gradient(90deg, #2980b9, #3498db);
+            background: linear-gradient(90deg, #1e40af, #3b82f6);
             transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+            box-shadow: 0 6px 18px rgba(59, 130, 246, 0.3);
         }
 
         .modal {
@@ -169,13 +174,13 @@ ob_end_flush();
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: fit-content;
-            height: fit-content;
-            background: #FFFFFF;
-            box-shadow: 0px 187px 75px rgba(0, 0, 0, 0.01), 0px 105px 63px rgba(0, 0, 0, 0.05), 0px 47px 47px rgba(0, 0, 0, 0.09), 0px 12px 26px rgba(0, 0, 0, 0.1), 0px 0px 0px rgba(0, 0, 0, 0.1);
-            border-radius: 26px;
+            width: 100%;
             max-width: 450px;
+            background: #ffffff;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+            border-radius: 20px;
             z-index: 1000;
+            padding: 20px;
         }
 
         .modal.show {
@@ -184,13 +189,8 @@ ob_end_flush();
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
+            from { opacity: 0; transform: translate(-50%, -45%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
         }
 
         .form {
@@ -198,49 +198,6 @@ ob_end_flush();
             flex-direction: column;
             gap: 20px;
             padding: 20px;
-        }
-
-        .payment--options {
-            width: calc(100% - 40px);
-            display: grid;
-            grid-template-columns: 33% 34% 33%;
-            gap: 20px;
-            padding: 10px;
-        }
-
-        .payment--options button {
-            height: 55px;
-            background: #F2F2F2;
-            border-radius: 11px;
-            padding: 0;
-            border: 0;
-            outline: none;
-            cursor: pointer;
-        }
-
-        .separator {
-            width: calc(100% - 20px);
-            display: grid;
-            grid-template-columns: 1fr 2fr 1fr;
-            gap: 10px;
-            color: #8B8E98;
-            margin: 0 10px;
-        }
-
-        .separator>p {
-            word-break: keep-all;
-            text-align: center;
-            font-weight: 600;
-            font-size: 11px;
-            margin: auto;
-        }
-
-        .separator .line {
-            width: 100%;
-            height: 1px;
-            border: 0;
-            background-color: #e8e8e8;
-            margin: auto;
         }
 
         .credit-card-info--form {
@@ -251,59 +208,57 @@ ob_end_flush();
 
         .input_container {
             width: 100%;
-            height: fit-content;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 6px;
         }
 
         .split {
             display: grid;
-            grid-template-columns: 4fr 2fr;
+            grid-template-columns: 2fr 1fr;
             gap: 15px;
         }
 
-        .split input {
-            width: 100%;
-        }
-
         .input_label {
-            font-size: 10px;
-            color: #8B8E98;
+            font-size: 12px;
+            color: #64748b;
             font-weight: 600;
+            text-transform: uppercase;
         }
 
         .input_field {
-            width: auto;
-            height: 40px;
-            padding: 0 0 0 16px;
-            border-radius: 9px;
+            width: 100%;
+            height: 45px;
+            padding: 0 15px;
+            border-radius: 12px;
             outline: none;
-            background-color: #F2F2F2;
-            border: 1px solid #e5e5e500;
-            transition: all 0.3s cubic-bezier(0.15, 0.83, 0.66, 1);
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            font-size: 14px;
         }
 
         .input_field:focus {
-            border: 1px solid transparent;
-            box-shadow: 0px 0px 0px 2px #242424;
-            background-color: transparent;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            background-color: #ffffff;
         }
 
         .purchase--btn {
-            height: 55px;
-            background: linear-gradient(180deg, #363636 0%, #1B1B1B 50%, #000000 100%);
-            border-radius: 11px;
-            border: 0;
-            outline: none;
+            height: 50px;
+            background: linear-gradient(90deg, #3b82f6, #1e40af);
+            border-radius: 12px;
+            border: none;
             color: #ffffff;
-            font-size: 13px;
-            font-weight: 700;
-            transition: all 0.3s cubic-bezier(0.15, 0.83, 0.66, 1);
+            font-size: 14px;
+            font-weight: 600;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
         }
 
         .purchase--btn:hover {
-            box-shadow: 0px 0px 0px 2px #FFFFFF, 0px 0px 0px 4px #0000003a;
+            background: linear-gradient(90deg, #1e40af, #3b82f6);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
         }
 
         .input_field::-webkit-outer-spin-button,
@@ -314,6 +269,18 @@ ob_end_flush();
 
         .input_field[type=number] {
             -moz-appearance: textfield;
+        }
+
+        @media (max-width: 768px) {
+            .service-title {
+                font-size: 2rem;
+            }
+            .card-title {
+                font-size: 1.5rem;
+            }
+            .modal {
+                max-width: 90%;
+            }
         }
     </style>
 </head>
@@ -344,47 +311,49 @@ ob_end_flush();
 
     <div class="modal" id="paymentModal">
         <form class="form" id="paymentForm" method="POST">
+            <button type="button" class="close-modal" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 20px; color: #64748b; cursor: pointer;">×</button>
             <input type="hidden" name="service_id" id="serviceId">
             <div class="credit-card-info--form">
                 <div class="input_container">
-                    <label for="name" class="input_label">Card holder full name</label>
-                    <input id="name" class="input_field" type="text" name="input-name" placeholder="Enter your full name" required>
+                    <label for="name" class="input_label">Kártyatulajdonos neve</label>
+                    <input id="name" class="input_field" type="text" name="input-name" placeholder="Teljes név megadása" required>
                 </div>
                 <div class="input_container">
-                    <label for="cardNumber" class="input_label">Card Number</label>
-                    <input id="cardNumber" class="input_field" type="number" name="cardNumber" placeholder="0000 0000 0000 0000" required>
+                    <label for="cardNumber" class="input_label">Kártyaszám</label>
+                    <input id="cardNumber" class="input_field" type="number" name="cardNumber" placeholder="1234 5678 9123 4567" required>
                 </div>
                 <div class="input_container">
-                    <label for="expiryDate" class="input_label">Expiry Date / CVV</label>
+                    <label for="expiryDate" class="input_label">Lejárati dátum / CVV</label>
                     <div class="split">
-                        <input id="expiryDate" class="input_field" type="text" name="expiryDate" placeholder="01/23" required>
-                        <input id="cvv" class="input_field" type="number" name="cvv" placeholder="CVV" required>
+                        <input id="expiryDate" class="input_field" type="text" name="expiryDate" placeholder="MM/YY" required>
+                        <input id="cvv" class="input_field" type="number" name="cvv" placeholder="123" required>
                     </div>
                 </div>
             </div>
-            <button type="submit" name="subscribe" class="purchase--btn">Checkout</button>
+            <button type="submit" name="subscribe" class="purchase--btn">Fizetés</button>
         </form>
     </div>
 
     <script>
         $(document).ready(function() {
-            // Modal megnyitása
             $(document).on("click", ".open-payment-modal", function() {
                 let serviceId = $(this).data("id");
                 $("#serviceId").val(serviceId);
                 $("#paymentModal").addClass("show");
             });
 
-            // Modal bezárása, ha a modalon kívülre kattintanak
+            $(document).on("click", ".close-modal", function() {
+                $("#paymentModal").removeClass("show");
+            });
+
             $(document).on("click", function(e) {
                 if ($(e.target).is("#paymentModal") && !$(e.target).closest(".form").length) {
                     $("#paymentModal").removeClass("show");
                 }
             });
 
-            // Űrlap beküldése ellenőrzéssel
             $("#paymentForm").on("submit", function(e) {
-                e.preventDefault(); // Megakadályozzuk az alapértelmezett küldést
+                e.preventDefault();
 
                 let cardNumber = $("#cardNumber").val();
                 if (!/^\d{16}$/.test(cardNumber)) {
@@ -413,9 +382,8 @@ ob_end_flush();
                     return;
                 }
 
-                // Modal bezárása és űrlap elküldése
                 $("#paymentModal").removeClass("show");
-                this.submit(); // Az űrlap elküldése
+                this.submit();
             });
         });
     </script>

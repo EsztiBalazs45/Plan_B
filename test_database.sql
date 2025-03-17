@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Már 16. 16:30
+-- Létrehozás ideje: 2025. Már 17. 11:10
 -- Kiszolgáló verziója: 10.4.32-MariaDB
 -- PHP verzió: 8.2.12
 
@@ -94,7 +94,8 @@ INSERT INTO `appointments` (`id`, `status`, `description`, `user_id`, `title`, `
 (56, 'canceled', 'megbeszéltünk mindent telefonon', 108, 'Zárás megbeszélést', '2025-03-18 11:00:00', '2025-03-18 11:30:00', 78),
 (58, 'confirmed', 'adadsdsadadsadas', 106, 'valami', '2025-03-19 09:00:00', '2025-03-19 09:30:00', 77),
 (59, 'canceled', 'asdadasd', 106, 'Proba', '2025-03-18 10:00:00', '2025-03-18 10:30:00', 77),
-(60, 'confirmed', 'valami', 106, 'proba', '2025-03-18 07:00:00', '2025-03-18 07:30:00', 77);
+(60, 'confirmed', 'valami', 106, 'proba', '2025-03-18 07:00:00', '2025-03-18 07:30:00', 77),
+(61, 'pending', 'asdasdqweqtrqqe', 106, 'asdsadsdad', '2025-03-18 10:00:00', '2025-03-18 10:30:00', 77);
 
 -- --------------------------------------------------------
 
@@ -788,7 +789,7 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT a táblához `appointments`
 --
 ALTER TABLE `appointments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=61;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=62;
 
 --
 -- AUTO_INCREMENT a táblához `clients`
