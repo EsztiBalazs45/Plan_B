@@ -132,7 +132,8 @@ $tab = $_GET['tab'] ?? 'users';
 // Lekérdezések
 $stats = $conn->query("SELECT (SELECT COUNT(*) FROM users) AS total_users, 
                        (SELECT COUNT(*) FROM clients) AS total_clients, 
-                       (SELECT COUNT(*) FROM appointments) AS total_appointments")->fetch(PDO::FETCH_ASSOC);
+                       (SELECT COUNT(*) FROM appointments) AS total_appointments,
+                       (SELECT COUNT(*) FROM subscriptions WHERE status = 'active') AS total_subscriptions")->fetch(PDO::FETCH_ASSOC);
 
 // Felhasználók lekérdezése lapozással
 $user_query = "SELECT * FROM users ORDER BY name $sort_by_name LIMIT :offset, :per_page";
@@ -159,10 +160,45 @@ $stmt->execute();
 $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $total_appointments = $conn->query("SELECT COUNT(*) FROM appointments")->fetchColumn();
 $total_appointment_pages = ceil($total_appointments / $per_page);
+
+// Előfizetések lekérdezése
+$subscriptions_query = "SELECT s.*, c.CompanyName AS client_name, u.name AS user_name  
+                        FROM subscriptions s 
+                        LEFT JOIN clients c ON s.user_id = c.user_id 
+                        LEFT JOIN users u ON c.user_id = u.id 
+                        ORDER BY s.start_date DESC";
+$stmt = $conn->prepare($subscriptions_query);
+$stmt->execute();
+$subscriptions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Naptárhoz szükséges időpontok lekérdezése
+$calendar_query = "SELECT a.id, a.start, a.end, u.name AS user_name 
+                   FROM appointments a 
+                   LEFT JOIN users u ON a.user_id = u.id 
+                   WHERE a.status != 'canceled'";
+$stmt = $conn->prepare($calendar_query);
+$stmt->execute();
+$calendar_events = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Események formázása a naptárhoz
+$formatted_events = array_map(function ($event) {
+    return [
+        'id' => $event['id'],
+        'title' => $event['user_name'] ?? 'Nincs hozzárendelve',
+        'start' => $event['start'],
+        'end' => $event['end'],
+        'extendedProps' => [
+            'user_name' => $event['user_name'] ?? 'Nincs hozzárendelve'
+        ]
+    ];
+}, $calendar_events);
+$events_json = json_encode($formatted_events);
+ob_end_flush();
 ?>
 
 <!DOCTYPE html>
 <html lang="hu">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -170,162 +206,338 @@ $total_appointment_pages = ceil($total_appointments / $per_page);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
     <style>
         body {
-            background: linear-gradient(135deg, #f9fafb, #334155);
+            background: linear-gradient(135deg, #e0e7ff, #1e293b);
             font-family: 'Poppins', sans-serif;
             min-height: 100vh;
             padding: 2rem;
-            color: #263238;
+            color: #1e293b;
         }
+
         .navbar-custom {
-            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
-            border-radius: 25px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-            padding: 1rem;
+            background: linear-gradient(135deg, #1e40af, #60a5fa);
+            border-radius: 30px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            padding: 1.2rem;
+            transition: all 0.3s ease;
         }
-        .navbar-custom .navbar-brand, .navbar-custom .nav-link {
+
+        .navbar-custom .navbar-brand,
+        .navbar-custom .nav-link {
             color: #ffffff;
             font-weight: 600;
-            transition: color 0.3s ease;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            transition: color 0.3s ease, transform 0.3s ease;
         }
-        .navbar-custom .nav-link:hover, .navbar-custom .nav-link.active {
+
+        .navbar-custom .nav-link:hover,
+        .navbar-custom .nav-link.active {
             color: #dbeafe;
+            transform: scale(1.05);
         }
+
         .content-wrapper {
             max-width: 1400px;
             margin: 0 auto;
         }
+
         .card {
             border: none;
-            border-radius: 20px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             background: #ffffff;
             animation: fadeInUp 0.5s ease-out;
+            overflow: hidden;
         }
+
         .card-header {
-            background: linear-gradient(135deg, #dbeafe, #bfdbfe);
-            color: #1e3a8a;
-            border-radius: 20px 20px 0 0;
-            padding: 1.5rem;
+            background: linear-gradient(135deg, #93c5fd, #3b82f6);
+            color: #ffffff;
+            border-radius: 25px 25px 0 0;
+            padding: 1.8rem;
             font-weight: 600;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
         }
+
         .dashboard-card {
-            border-radius: 20px;
-            padding: 1.5rem;
+            border-radius: 25px;
+            padding: 2rem;
             text-align: center;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease;
-            background: #ffffff;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background: linear-gradient(135deg, #ffffff, #f8fafc);
         }
+
         .dashboard-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
         }
+
         .dashboard-card i {
             color: #3b82f6;
-            font-size: 2rem;
-            margin-bottom: 0.5rem;
+            font-size: 2.5rem;
+            margin-bottom: 0.8rem;
+            transition: transform 0.3s ease;
         }
+
+        .dashboard-card:hover i {
+            transform: scale(1.1);
+        }
+
         .table {
-            border-radius: 10px;
+            border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
         }
+
         .table thead {
-            background: #dbeafe;
+            background: #bfdbfe;
             color: #1e3a8a;
         }
-        .table th, .table td {
-            padding: 1rem;
+
+        .table th,
+        .table td {
+            padding: 1.2rem;
             vertical-align: middle;
         }
+
         .table tbody tr:hover {
             background: #f1f5f9;
         }
-        .appointment-card {
-            border-radius: 15px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+
+        .subscription-card {
+            border-radius: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
             background: linear-gradient(135deg, #ffffff, #f1f5f9);
-            border: 1px solid #d1d5db;
+            border: 1px solid #e5e7eb;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
-        .appointment-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+
+        .subscription-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
         }
-        .appointment-card h6 {
-            color: #1e3a8a;
+
+        .subscription-card h6 {
+            color: #1e40af;
+            font-weight: 600;
+            margin-bottom: 0.8rem;
+        }
+
+        .subscription-card p {
+            margin: 0.6rem 0;
+            color: #374151;
+            font-size: 0.95rem;
+        }
+
+        .subscription-card strong {
+            color: #1e293b;
             font-weight: 600;
         }
-        .appointment-card p {
-            margin: 0.5rem 0;
-            color: #374151;
-        }
-        .appointment-card strong {
-            color: #263238;
-        }
+
         .btn {
             border-radius: 50px;
-            padding: 0.6rem 1.8rem;
+            padding: 0.7rem 2rem;
             font-weight: 500;
             transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
         }
-        .btn-primary { background: #3b82f6; border: none; }
-        .btn-primary:hover { background: #2563eb; transform: scale(1.05); }
-        .btn-success { background: #10b981; border: none; }
-        .btn-success:hover { background: #059669; transform: scale(1.05); }
-        .btn-danger { background: #ef4444; border: none; }
-        .btn-danger:hover { background: #dc2626; transform: scale(1.05); }
+
+        .btn-primary {
+            background: #3b82f6;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: #1e40af;
+            transform: scale(1.05);
+        }
+
+        .btn-success {
+            background: #10b981;
+            border: none;
+        }
+
+        .btn-success:hover {
+            background: #047857;
+            transform: scale(1.05);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            border: none;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+            transform: scale(1.05);
+        }
+
         .search-bar {
             border-radius: 50px;
-            padding: 0.75rem 1.5rem;
+            padding: 0.8rem 1.8rem;
             border: 1px solid #d1d5db;
             width: 100%;
-            max-width: 400px;
-            margin-bottom: 1.5rem;
-            transition: border-color 0.3s ease;
+            max-width: 450px;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
         }
+
         .search-bar:focus {
             border-color: #3b82f6;
-            box-shadow: 0 0 5px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
             outline: none;
         }
+
         .pagination .page-link {
             border-radius: 50px;
-            margin: 0 0.2rem;
+            margin: 0 0.3rem;
             color: #3b82f6;
             transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
         }
+
         .pagination .page-link:hover {
             background: #dbeafe;
             color: #1e3a8a;
+            transform: scale(1.05);
         }
+
         .pagination .page-item.active .page-link {
             background: #3b82f6;
             color: #ffffff;
             border-color: #3b82f6;
         }
-        .alert { border-radius: 10px; margin-top: 1.5rem; }
-        .status-pending { color: #d97706; font-weight: 600; }
-        .status-confirmed { color: #059669; font-weight: 600; }
-        .status-canceled { color: #dc2626; font-weight: 600; }
-        @media (max-width: 768px) {
-            body { padding: 1rem; }
-            .navbar-custom { padding: 0.75rem; }
-            .dashboard-card { margin-bottom: 1rem; }
-            .appointment-card { padding: 1rem; }
-            .btn { padding: 0.5rem 1.2rem; }
-            .search-bar { max-width: 100%; }
+
+        .alert {
+            border-radius: 15px;
+            margin-top: 2rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
         }
+
+        .status-active {
+            color: #059669;
+            font-weight: 600;
+        }
+
+        .status-expired {
+            color: #d97706;
+            font-weight: 600;
+        }
+
+        .status-canceled {
+            color: #dc2626;
+            font-weight: 600;
+        }
+
+        #calendar {
+            max-width: 1500px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+        }
+
+        .fc-toolbar {
+            background: linear-gradient(135deg, #93c5fd, #3b82f6);
+            color: #ffffff;
+            border-radius: 15px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .fc-button {
+            background: #1e40af !important;
+            border: none !important;
+            border-radius: 50px !important;
+            padding: 0.6rem 1.5rem !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+        }
+
+        .fc-button:hover {
+            background: #2563eb !important;
+            transform: scale(1.05) !important;
+        }
+
+        .fc-button.fc-button-active {
+            background: #10b981 !important;
+        }
+
+        .fc-event {
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            border: none;
+            border-radius: 10px;
+            padding: 0.8rem;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            font-size: 1rem;
+            line-height: 1.4;
+        }
+
+        .fc-event:hover {
+            transform: scale(1.03);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .navbar-custom {
+                padding: 0.8rem;
+            }
+
+            .dashboard-card {
+                margin-bottom: 1.5rem;
+                padding: 1.5rem;
+            }
+
+            .subscription-card {
+                padding: 1.5rem;
+            }
+
+            .btn {
+                padding: 0.6rem 1.5rem;
+            }
+
+            .search-bar {
+                max-width: 100%;
+            }
+
+            #calendar {
+                padding: 2rem;
+            }
+
+            .fc-event {
+                font-size: 0.85rem;
+                padding: 0.5rem;
+            }
+        }
+
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
     </style>
 </head>
+
 <body>
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container-fluid">
@@ -338,6 +550,8 @@ $total_appointment_pages = ceil($total_appointments / $per_page);
                     <li class="nav-item"><a class="nav-link <?php echo $tab === 'users' ? 'active' : ''; ?>" href="?tab=users">Felhasználók</a></li>
                     <li class="nav-item"><a class="nav-link <?php echo $tab === 'clients' ? 'active' : ''; ?>" href="?tab=clients">Ügyfelek</a></li>
                     <li class="nav-item"><a class="nav-link <?php echo $tab === 'appointments' ? 'active' : ''; ?>" href="?tab=appointments">Időpontok</a></li>
+                    <li class="nav-item"><a class="nav-link <?php echo $tab === 'calendar' ? 'active' : ''; ?>" href="?tab=calendar">Naptár</a></li>
+                    <li class="nav-item"><a class="nav-link <?php echo $tab === 'subscriptions' ? 'active' : ''; ?>" href="?tab=subscriptions">Előfizetések</a></li>
                 </ul>
             </div>
         </div>
@@ -352,9 +566,30 @@ $total_appointment_pages = ceil($total_appointments / $per_page);
         <?php endif; ?>
 
         <div class="row mt-4 mb-5">
-            <div class="col-md-4"><div class="dashboard-card"><i class="fas fa-users"></i><h3><?php echo $stats['total_users']; ?></h3><p>Felhasználók</p></div></div>
-            <div class="col-md-4"><div class="dashboard-card"><i class="fas fa-building"></i><h3><?php echo $stats['total_clients']; ?></h3><p>Ügyfelek</p></div></div>
-            <div class="col-md-4"><div class="dashboard-card"><i class="fas fa-calendar-check"></i><h3><?php echo $stats['total_appointments']; ?></h3><p>Időpontok</p></div></div>
+            <div class="col-md-3">
+                <div class="dashboard-card"><i class="fas fa-users"></i>
+                    <h3><?php echo $stats['total_users']; ?></h3>
+                    <p>Felhasználók</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card"><i class="fas fa-building"></i>
+                    <h3><?php echo $stats['total_clients']; ?></h3>
+                    <p>Ügyfelek</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card"><i class="fas fa-calendar-check"></i>
+                    <h3><?php echo $stats['total_appointments']; ?></h3>
+                    <p>Időpontok</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dashboard-card"><i class="fas fa-money-bill"></i>
+                    <h3><?php echo $stats['total_subscriptions']; ?></h3>
+                    <p>Aktív előfizetések</p>
+                </div>
+            </div>
         </div>
 
         <!-- Dinamikus keresés -->
@@ -362,7 +597,9 @@ $total_appointment_pages = ceil($total_appointments / $per_page);
 
         <?php if ($tab === 'users'): ?>
             <div class="card">
-                <div class="card-header"><h5>Felhasználók kezelése</h5></div>
+                <div class="card-header">
+                    <h5>Felhasználók kezelése</h5>
+                </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-hover">
@@ -424,12 +661,18 @@ $total_appointment_pages = ceil($total_appointments / $per_page);
             </div>
         <?php elseif ($tab === 'clients'): ?>
             <div class="card">
-                <div class="card-header"><h5>Ügyfelek kezelése</h5></div>
+                <div class="card-header">
+                    <h5>Ügyfelek kezelése</h5>
+                </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-hover">
                             <thead>
-                                <tr><th>Név</th><th>Felhasználó</th><th>Műveletek</th></tr>
+                                <tr>
+                                    <th>Név</th>
+                                    <th>Felhasználó</th>
+                                    <th>Műveletek</th>
+                                </tr>
                             </thead>
                             <tbody id="clientTable">
                                 <?php foreach ($clients as $client): ?>
@@ -459,23 +702,25 @@ $total_appointment_pages = ceil($total_appointments / $per_page);
             </div>
         <?php elseif ($tab === 'appointments'): ?>
             <div class="card">
-                <div class="card-header"><h5>Időpontok kezelése</h5></div>
+                <div class="card-header">
+                    <h5>Időpontok kezelése</h5>
+                </div>
                 <div class="card-body">
                     <div id="appointmentList">
                         <?php foreach ($appointments as $appointment): ?>
-                            <div class="appointment-card" 
-                                 data-title="<?php echo htmlspecialchars($appointment['title']); ?>" 
-                                 data-user="<?php echo htmlspecialchars($appointment['user_name'] ?? ''); ?>" 
-                                 data-client="<?php echo htmlspecialchars($appointment['CompanyName'] ?? ''); ?>" 
-                                 data-description="<?php echo htmlspecialchars($appointment['description'] ?? ''); ?>">
+                            <div class="subscription-card"
+                                data-title="<?php echo htmlspecialchars($appointment['title']); ?>"
+                                data-user="<?php echo htmlspecialchars($appointment['user_name'] ?? ''); ?>"
+                                data-client="<?php echo htmlspecialchars($appointment['CompanyName'] ?? ''); ?>"
+                                data-description="<?php echo htmlspecialchars($appointment['description'] ?? ''); ?>">
                                 <h6><strong>Címke:</strong> <?php echo htmlspecialchars($appointment['title']); ?></h6>
                                 <p><strong>Foglalta:</strong> <?php echo htmlspecialchars($appointment['user_name'] ?? 'Nincs hozzárendelve'); ?></p>
                                 <p><strong>Ügyfél:</strong> <?php echo htmlspecialchars($appointment['CompanyName'] ?? 'Nincs megadva'); ?></p>
                                 <p><strong>Időpont:</strong> <?php echo date('Y.m.d H:i', strtotime($appointment['start'])) . ' - ' . date('H:i', strtotime($appointment['end'])); ?></p>
                                 <p><strong>Leírás:</strong> <?php echo htmlspecialchars($appointment['description'] ?? 'Nincs leírás'); ?></p>
                                 <p><strong>Státusz:</strong> <span class="status-<?php echo $appointment['status']; ?>">
-                                    <?php echo $appointment['status'] === 'pending' ? 'Függőben' : ($appointment['status'] === 'confirmed' ? 'Megerősítve' : 'Lemondva'); ?>
-                                </span></p>
+                                        <?php echo $appointment['status'] === 'pending' ? 'Függőben' : ($appointment['status'] === 'confirmed' ? 'Megerősítve' : 'Lemondva'); ?>
+                                    </span></p>
                                 <?php if ($appointment['status'] === 'pending'): ?>
                                     <form method="POST" class="d-inline" style="margin-right: 0.5rem;">
                                         <input type="hidden" name="appointment_id" value="<?php echo $appointment['id']; ?>">
@@ -510,10 +755,43 @@ $total_appointment_pages = ceil($total_appointments / $per_page);
                     </nav>
                 </div>
             </div>
+        <?php elseif ($tab === 'subscriptions'): ?>
+            <div class="card">
+                <div class="card-header">
+                    <h5>Előfizetések kezelése</h5>
+                </div>
+                <div class="card-body">
+                    <div id="subscriptionList">
+                        <?php foreach ($subscriptions as $subscription): ?>
+                            <div class="subscription-card"
+                                data-client="<?php echo htmlspecialchars($subscription['client_name'] ?? ''); ?>"
+                                data-user="<?php echo htmlspecialchars($subscription['user_name'] ?? ''); ?>"
+                                data-service="<?php echo htmlspecialchars($subscription['service_id']); ?>">
+                                <h6><strong>Ügyfél:</strong> <?php echo htmlspecialchars($subscription['client_name'] ?? 'Nincs megadva'); ?></h6>
+                                <p><strong>Felhasználó:</strong> <?php echo htmlspecialchars($subscription['user_name'] ?? 'Nincs hozzárendelve'); ?></p>
+                                <p><strong>Előfizetés típusa:</strong> <?php echo htmlspecialchars($subscription['service_id']); ?></p>
+                                <p><strong>Státusz:</strong> <span class="status-<?php echo $subscription['status']; ?>">
+                                        <?php echo $subscription['status'] === 'active' ? 'Aktív' : ($subscription['status'] === 'expired' ? 'Lejárt' : 'Lemondva'); ?>
+                                    </span></p>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+            </div>
+        <?php elseif ($tab === 'calendar'): ?>
+            <div class="card">
+                <div class="card-header">
+                    <h5>Naptár</h5>
+                </div>
+                <div class="card-body">
+                    <div id="calendar"></div>
+                </div>
+            </div>
         <?php endif; ?>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
     <script>
         document.getElementById('searchInput').addEventListener('input', function() {
             const query = this.value.toLowerCase();
@@ -534,7 +812,7 @@ $total_appointment_pages = ceil($total_appointments / $per_page);
                     row.style.display = (name.includes(query) || user.includes(query)) ? '' : 'none';
                 });
             } else if (tab === 'appointments') {
-                const cards = document.querySelectorAll('#appointmentList .appointment-card');
+                const cards = document.querySelectorAll('#appointmentList .subscription-card');
                 cards.forEach(card => {
                     const title = card.getAttribute('data-title').toLowerCase();
                     const user = card.getAttribute('data-user').toLowerCase();
@@ -542,13 +820,79 @@ $total_appointment_pages = ceil($total_appointments / $per_page);
                     const description = card.getAttribute('data-description').toLowerCase();
                     card.style.display = (title.includes(query) || user.includes(query) || client.includes(query) || description.includes(query)) ? '' : 'none';
                 });
+            } else if (tab === 'subscriptions') {
+                const cards = document.querySelectorAll('#subscriptionList .subscription-card');
+                cards.forEach(card => {
+                    const client = card.getAttribute('data-client').toLowerCase();
+                    const user = card.getAttribute('data-user').toLowerCase();
+                    const type = card.getAttribute('data-type').toLowerCase();
+                    card.style.display = (client.includes(query) || user.includes(query) || type.includes(query)) ? '' : 'none';
+                });
             }
         });
+
+        <?php if ($tab === 'calendar'): ?>
+            document.addEventListener('DOMContentLoaded', function() {
+                var calendarEl = document.getElementById('calendar');
+                var calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'timeGridWeek',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    },
+                    events: <?php echo $events_json; ?>,
+                    eventTimeFormat: {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: false
+                    },
+                    slotMinTime: '07:00:00',
+                    slotMaxTime: '17:00:00',
+                    allDaySlot: false,
+                    height: 900,
+                    eventContent: function(arg) {
+                        var startTime = arg.event.start.toLocaleTimeString('hu-HU', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        var endTime = arg.event.end ? arg.event.end.toLocaleTimeString('hu-HU', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        }) : '';
+                        return {
+                            html: `
+                            <div class="fc-event-main">
+                                <strong>${arg.event.extendedProps.user_name}</strong><br>
+                                <small>${startTime} - ${endTime}</small>
+                            </div>
+                        `
+                        };
+                    },
+                    eventDidMount: function(info) {
+                        var startTime = info.event.start.toLocaleTimeString('hu-HU', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        var endTime = info.event.end ? info.event.end.toLocaleTimeString('hu-HU', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        }) : '';
+                        info.el.setAttribute('title', `
+                        Foglalta: ${info.event.extendedProps.user_name}
+                        Mikor: ${startTime} - ${endTime}
+                    `);
+                    }
+                });
+                calendar.render();
+            });
+        <?php endif; ?>
     </script>
 </body>
+
 </html>
 
-<?php 
+<?php
 ob_end_flush();
-require_once '../includes/footer.php'; 
+require_once '../includes/footer.php';
 ?>

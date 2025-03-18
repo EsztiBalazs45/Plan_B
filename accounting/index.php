@@ -1,8 +1,14 @@
 <?php
+ob_start();
 require_once 'includes/header.php';
 
 if (!isLoggedIn()) {
     header('Location: pages/login.php');
+    exit();
+}
+// Ha a felhasználó admin, azonnal átirányítjuk az admin felületre
+if (isAdmin()) {
+    header('Location: pages/admin.php');
     exit();
 }
 
@@ -28,14 +34,16 @@ try {
     $stmt = $conn->prepare("SELECT COUNT(*) FROM appointments WHERE MONTH(start) = MONTH(CURDATE()) AND YEAR(start) = YEAR(CURDATE()) AND user_id = ?");
     $stmt->execute([$_SESSION['user_id']]);
     $monthAppointments = $stmt->fetchColumn();
-} catch(PDOException $e) {
+} catch (PDOException $e) {
     error_log("Error getting statistics: " . $e->getMessage());
     $totalClients = $todayAppointments = $pendingAppointments = $monthAppointments = 0;
 }
+ob_end_flush();
 ?>
 
 <!DOCTYPE html>
 <html lang="hu">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -50,11 +58,13 @@ try {
             min-height: 100vh;
             color: #263238;
         }
+
         .content-wrapper {
             padding: 2rem;
             max-width: 1400px;
             margin: 0 auto;
         }
+
         .welcome-section {
             background: linear-gradient(135deg, #1976d2, #42a5f5);
             padding: 3rem;
@@ -65,6 +75,7 @@ try {
             overflow: hidden;
             animation: fadeIn 1s ease-out;
         }
+
         .welcome-section::before {
             content: '';
             position: absolute;
@@ -76,15 +87,18 @@ try {
             transform: rotate(30deg);
             pointer-events: none;
         }
+
         .welcome-section h1 {
             font-weight: 600;
             font-size: 2.5rem;
             margin-bottom: 1rem;
         }
+
         .welcome-section p {
             font-size: 1.2rem;
             opacity: 0.9;
         }
+
         .stat-card {
             border: none;
             border-radius: 20px;
@@ -95,43 +109,56 @@ try {
             animation: fadeInUp 0.5s ease-out;
             position: relative;
         }
+
         .stat-card:hover {
             transform: translateY(-8px);
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
         }
-        .stat-card.bg-primary { 
-            background: #f0f4f8; 
-            color: #0d47a1; /* Sötétebb kék */
+
+        .stat-card.bg-primary {
+            background: #f0f4f8;
+            color: #0d47a1;
+            /* Sötétebb kék */
         }
-        .stat-card.bg-success { 
-            background: #e8f5e9; 
-            color: #1b5e20; /* Sötétebb zöld */
+
+        .stat-card.bg-success {
+            background: #e8f5e9;
+            color: #1b5e20;
+            /* Sötétebb zöld */
         }
-        .stat-card.bg-warning { 
-            background: #fff8e1; 
-            color: #e65100; /* Sötétebb narancs */
+
+        .stat-card.bg-warning {
+            background: #fff8e1;
+            color: #e65100;
+            /* Sötétebb narancs */
         }
-        .stat-card.bg-info { 
-            background: #e0f7fa; 
-            color: #01579b; /* Sötétebb cián */
+
+        .stat-card.bg-info {
+            background: #e0f7fa;
+            color: #01579b;
+            /* Sötétebb cián */
         }
+
         .stat-card i {
             font-size: 2.5rem;
             margin-bottom: 1rem;
             opacity: 0.9;
         }
+
         .stat-card h3 {
             font-weight: 700;
             font-size: 2rem;
             margin-bottom: 0.5rem;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
+
         .stat-card p {
             font-size: 1rem;
             font-weight: 600;
             opacity: 1;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
+
         .action-card {
             border: none;
             border-radius: 20px;
@@ -139,27 +166,33 @@ try {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             animation: fadeInUp 0.7s ease-out;
         }
+
         .action-card:hover {
             transform: translateY(-8px);
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
         }
+
         .action-card .card-body {
             padding: 2rem;
             text-align: center;
         }
+
         .action-card i {
             font-size: 2rem;
             margin-bottom: 1rem;
         }
+
         .action-card h5 {
             font-weight: 600;
             font-size: 1.25rem;
             margin-bottom: 1rem;
         }
+
         .action-card p {
             font-size: 0.95rem;
             color: #607d8b;
         }
+
         .btn {
             border-radius: 50px;
             padding: 0.6rem 1.8rem;
@@ -167,46 +200,85 @@ try {
             transition: all 0.3s ease;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
+
         .btn:hover {
             transform: scale(1.05);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
-        .btn-primary { background: #1976d2; border: none; }
-        .btn-success { background: #2e7d32; border: none; }
-        .btn-info { background: #0288d1; border: none; }
-        .btn-warning { background: #f57c00; border: none; }
+
+        .btn-primary {
+            background: #1976d2;
+            border: none;
+        }
+
+        .btn-success {
+            background: #2e7d32;
+            border: none;
+        }
+
+        .btn-info {
+            background: #0288d1;
+            border: none;
+        }
+
+        .btn-warning {
+            background: #f57c00;
+            border: none;
+        }
+
         h2 {
             font-weight: 600;
             color: #263238;
             margin-bottom: 2rem;
         }
+
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
+
         @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
+
         @media (max-width: 768px) {
             .welcome-section {
                 padding: 2rem;
             }
+
             .welcome-section h1 {
                 font-size: 2rem;
             }
-            .stat-card, .action-card {
+
+            .stat-card,
+            .action-card {
                 margin-bottom: 1.5rem;
             }
+
             .stat-card h3 {
                 font-size: 1.5rem;
             }
+
             .action-card .card-body {
                 padding: 1.5rem;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="content-wrapper">
         <!-- Welcome Section -->
@@ -319,6 +391,7 @@ try {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
 
 <?php require_once 'includes/footer.php'; ?>
