@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Már 18. 16:27
+-- Létrehozás ideje: 2025. Már 19. 11:24
 -- Kiszolgáló verziója: 10.4.32-MariaDB
 -- PHP verzió: 8.2.12
 
@@ -222,7 +222,8 @@ INSERT INTO `clients` (`id`, `user_id`, `CompanyName`, `tax_number`, `registrati
 (74, 5, 'Sandra Johnston', '766593340', '234166993', '730 Velma Extension Suite 851\nCedrickmouth, OK 32568', 'Mr. Constantin Hand II', '(458) 899-7490', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (75, 1, 'valami Kft', '410667237', '454582596', '96132 Romaguera Unions\nPort Hymanton, NY 85038-3910', 'Ms. Kacie Nicolas', '+1.937.620.6801', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (77, 106, 'Corki_repcsi Kft', '2145172185718', '945678213', 'Pécs Valami utca 27', 'Kis Pál', '+36303521472', NULL, NULL),
-(78, 108, 'Tham_Catch_Kft', '27560384-2-08', '5430689124', 'Budapest Sport utca 42', 'Kalapos Béla', '+36202546894', NULL, NULL);
+(78, 108, 'Tham_Catch_Kft', '27560384-2-08', '5430689124', 'Budapest Sport utca 42', 'Kalapos Béla', '+36202546894', NULL, NULL),
+(79, 109, 'Showourlazer Bt', '27564784-2-10', '5520664124', 'Mosonmagyaróvár Várkapu utca 14', 'Kurcsics Angéla', '+30702543367', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -386,7 +387,8 @@ CREATE TABLE `payment_details` (
 
 INSERT INTO `payment_details` (`id`, `user_id`, `subscription_id`, `cardholder_name`, `card_number`, `expiry_date`, `cvv`, `created_at`) VALUES
 (14, 108, 33, 'Kis Pista', '0123456789123456', '09/29', '927', '2025-03-11 15:13:44'),
-(17, 106, 37, 'Tac András', '1234567891234567', '08/30', '267', '2025-03-12 08:11:35');
+(18, 106, 38, 'Tac András', '1234567891234567', '08/28', '354', '2025-03-19 09:50:32'),
+(21, 109, 49, 'Lézer János', '1234567891234567', '09/29', '354', '2025-03-19 10:23:17');
 
 -- --------------------------------------------------------
 
@@ -504,7 +506,8 @@ CREATE TABLE `subscriptions` (
 
 INSERT INTO `subscriptions` (`id`, `user_id`, `service_id`, `start_date`, `end_date`, `status`) VALUES
 (33, 108, 5, '2025-03-11 15:13:44', NULL, 'active'),
-(37, 106, 6, '2025-03-12 08:11:35', NULL, 'active');
+(38, 106, 2, '2025-03-19 09:50:32', NULL, 'active'),
+(49, 109, 1, '2025-03-19 10:23:17', NULL, 'active');
 
 -- --------------------------------------------------------
 
@@ -635,7 +638,8 @@ INSERT INTO `users` (`id`, `name`, `username`, `email`, `role`, `email_verified_
 (105, 'Kulcs József', 'Kulacs', 'Kulcsa@asd.com', 'user', NULL, '$2y$10$Lf1ZSos4h2WJ1xIT1HRU6Opx4GWU2JBbPEc/5z9FXkh2/VyTDR0Ta', NULL, NULL, NULL),
 (106, 'Tac András', 'ZicZac', 'tictac@jedlik.hu', 'admin', NULL, '$2y$10$wYqjESQ793BG1QnUk.EGi.YzqDy3ybK534KxuOaMn2.dGP7HU0eke', NULL, NULL, NULL),
 (107, 'Kala Pál', 'kalap', 'kala@gamil.com', 'user', NULL, '$2y$10$4So5HV/woIrefXFOC75bnuJjzYNXOkzs72v8xB0v5iLF3K7n/1GJ2', NULL, NULL, NULL),
-(108, 'Kis Pista', 'Pifta', 'Pistike@gmail.com', 'user', NULL, '$2y$10$9mhHAae1HoM44PQolW0Rvez.HlWAPC.gcGEch7YP9QUIIy3KcO.sa', NULL, NULL, NULL);
+(108, 'Kis Pista', 'Pifta', 'Pistike@gmail.com', 'user', NULL, '$2y$10$9mhHAae1HoM44PQolW0Rvez.HlWAPC.gcGEch7YP9QUIIy3KcO.sa', NULL, NULL, NULL),
+(109, 'Lézer János', 'Lézer Jani', 'lezerjani@gamil.com', 'user', NULL, '$2y$10$Tk4nI8U4IkABXkCawmdO1evL.VL59HZkh9Q0FthqcNA8kHtg5y6fe', NULL, NULL, NULL);
 
 --
 -- Indexek a kiírt táblákhoz
@@ -796,7 +800,7 @@ ALTER TABLE `appointments`
 -- AUTO_INCREMENT a táblához `clients`
 --
 ALTER TABLE `clients`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=79;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=80;
 
 --
 -- AUTO_INCREMENT a táblához `dowloaddata`
@@ -820,7 +824,7 @@ ALTER TABLE `newsletters`
 -- AUTO_INCREMENT a táblához `payment_details`
 --
 ALTER TABLE `payment_details`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT a táblához `personal_acces_token`
@@ -844,13 +848,13 @@ ALTER TABLE `service_users`
 -- AUTO_INCREMENT a táblához `subscriptions`
 --
 ALTER TABLE `subscriptions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
 
 --
 -- AUTO_INCREMENT a táblához `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=109;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=110;
 
 --
 -- Megkötések a kiírt táblákhoz

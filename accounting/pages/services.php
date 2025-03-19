@@ -33,32 +33,41 @@ $result = $conn->query("SELECT * FROM services");
 $services = fetchAll($result);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['subscribe'])) {
-    $service_id = (int)$_POST['service_id'];
-    $cardholder_name = htmlspecialchars($_POST['input-name']);
-    $card_number = htmlspecialchars($_POST['cardNumber']);
-    $expiry_date = htmlspecialchars($_POST['expiryDate']);
-    $cvv = htmlspecialchars($_POST['cvv']);
+    $service_id = filter_input(INPUT_POST, 'service_id', FILTER_VALIDATE_INT);
+    $cardholder_name = filter_input(INPUT_POST, 'input-name', FILTER_SANITIZE_STRING);
+    $card_number = filter_input(INPUT_POST, 'cardNumber', FILTER_SANITIZE_STRING);
+    $expiry_date = filter_input(INPUT_POST, 'expiryDate', FILTER_SANITIZE_STRING);
+    $cvv = filter_input(INPUT_POST, 'cvv', FILTER_SANITIZE_STRING);
 
-    $conn->begin_transaction();
-    try {
-        $stmt = $conn->prepare("INSERT INTO subscriptions (user_id, service_id, start_date, status) VALUES (?, ?, NOW(), 'active')");
-        $stmt->bind_param("ii", $user_id, $service_id);
-        $stmt->execute();
-        $subscription_id = $conn->insert_id;
+    if ($service_id && $cardholder_name && $card_number && $expiry_date && $cvv) {
+        $conn->begin_transaction();
+        try {
+            $stmt = $conn->prepare("INSERT INTO subscriptions (user_id, service_id, start_date, status) VALUES (?, ?, NOW(), 'active')");
+            $stmt->bind_param("ii", $user_id, $service_id);
+            if (!$stmt->execute()) {
+                throw new Exception("Hiba a subscriptions beszúrásakor: " . $stmt->error);
+            }
+            $subscription_id = $conn->insert_id;
 
-        $stmt = $conn->prepare("INSERT INTO payment_details (user_id, subscription_id, cardholder_name, card_number, expiry_date, cvv) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("iissss", $user_id, $subscription_id, $cardholder_name, $card_number, $expiry_date, $cvv);
-        $stmt->execute();
+            $stmt = $conn->prepare("INSERT INTO payment_details (user_id, subscription_id, cardholder_name, card_number, expiry_date, cvv) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("iissss", $user_id, $subscription_id, $cardholder_name, $card_number, $expiry_date, $cvv);
+            if (!$stmt->execute()) {
+                throw new Exception("Hiba a payment_details beszúrásakor: " . $stmt->error);
+            }
 
-        $conn->commit();
-        $_SESSION['message'] = 'Sikeresen előfizettél!';
-        $_SESSION['message_type'] = 'success';
-        header('Location: profile.php');
-        exit();
-    } catch (Exception $e) {
-        $conn->rollback();
-        error_log("Hiba az előfizetés során: " . $e->getMessage());
-        $_SESSION['message'] = 'Hiba történt az előfizetés során!';
+            $conn->commit();
+            $_SESSION['message'] = 'Sikeresen előfizettél!';
+            $_SESSION['message_type'] = 'success';
+            header('Location: profile.php');
+            exit();
+        } catch (Exception $e) {
+            $conn->rollback();
+            error_log("Hiba az előfizetés során: " . $e->getMessage());
+            $_SESSION['message'] = 'Hiba történt az előfizetés során: ' . $e->getMessage();
+            $_SESSION['message_type'] = 'danger';
+        }
+    } else {
+        $_SESSION['message'] = 'Hiányzó vagy érvénytelen adatok!';
         $_SESSION['message_type'] = 'danger';
     }
 }
@@ -310,7 +319,7 @@ ob_end_flush();
     </div>
 
     <div class="modal" id="paymentModal">
-        <form class="form" id="paymentForm" method="POST">
+        <form class="form" id="paymentForm" method="POST" action="">
             <button type="button" class="close-modal" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 20px; color: #64748b; cursor: pointer;">×</button>
             <input type="hidden" name="service_id" id="serviceId">
             <div class="credit-card-info--form">
@@ -353,18 +362,16 @@ ob_end_flush();
             });
 
             $("#paymentForm").on("submit", function(e) {
-                e.preventDefault();
-
                 let cardNumber = $("#cardNumber").val();
                 if (!/^\d{16}$/.test(cardNumber)) {
                     alert("A kártyaszámnak pontosan 16 számjegyből kell állnia!");
-                    return;
+                    return false;
                 }
 
                 let expiryDate = $("#expiryDate").val();
                 if (!/^\d{2}\/\d{2}$/.test(expiryDate)) {
                     alert("A lejárati dátum formátuma nem megfelelő! Használd a MM/YY formátumot.");
-                    return;
+                    return false;
                 }
 
                 let [month, year] = expiryDate.split('/');
@@ -373,17 +380,16 @@ ob_end_flush();
                 let currentMonth = currentDate.getMonth() + 1;
                 if (year < currentYear || (year == currentYear && month < currentMonth)) {
                     alert("A megadott lejárati dátum múltbeli dátum!");
-                    return;
+                    return false;
                 }
 
                 let cvv = $("#cvv").val();
                 if (!/^\d{3}$/.test(cvv)) {
                     alert("A CVV kódnak pontosan 3 számjegyből kell állnia!");
-                    return;
+                    return false;
                 }
 
-                $("#paymentModal").removeClass("show");
-                this.submit();
+                return true; // Ha minden validáció sikeres, a form elküldhető
             });
         });
     </script>

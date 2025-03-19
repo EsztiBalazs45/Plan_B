@@ -162,10 +162,11 @@ $total_appointments = $conn->query("SELECT COUNT(*) FROM appointments")->fetchCo
 $total_appointment_pages = ceil($total_appointments / $per_page);
 
 // Előfizetések lekérdezése
-$subscriptions_query = "SELECT s.*, c.CompanyName AS client_name, u.name AS user_name  
+$subscriptions_query = "SELECT s.*, c.CompanyName AS client_name, u.name AS user_name, serv.service_name 
                         FROM subscriptions s 
                         LEFT JOIN clients c ON s.user_id = c.user_id 
                         LEFT JOIN users u ON c.user_id = u.id 
+                        LEFT JOIN services serv ON s.service_id = serv.service_id 
                         ORDER BY s.start_date DESC";
 $stmt = $conn->prepare($subscriptions_query);
 $stmt->execute();
@@ -442,7 +443,7 @@ ob_end_flush();
             background: #ffffff;
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
+            padding: 2rem;
         }
 
         .fc-toolbar {
@@ -450,16 +451,17 @@ ob_end_flush();
             color: #ffffff;
             border-radius: 15px;
             padding: 1rem;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         .fc-button {
             background: #1e40af !important;
             border: none !important;
             border-radius: 50px !important;
-            padding: 0.6rem 1.5rem !important;
+            padding: 0.7rem 1.8rem !important;
             transition: all 0.3s ease !important;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+            font-size: 1rem !important;
         }
 
         .fc-button:hover {
@@ -474,18 +476,33 @@ ob_end_flush();
         .fc-event {
             background: linear-gradient(135deg, #60a5fa, #3b82f6);
             border: none;
-            border-radius: 10px;
+            border-radius: 12px;
             padding: 0.8rem;
             color: #ffffff;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
             transition: transform 0.3s ease;
-            font-size: 1rem;
-            line-height: 1.4;
+            font-size: 1.2rem;
+            line-height: 1.5;
+            overflow: hidden;
+            white-space: normal;
+            word-wrap: break-word;
         }
 
         .fc-event:hover {
             transform: scale(1.03);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .fc-timegrid-slot {
+            height: 2.5rem !important; /* Nagyobb slot-magasság a heti nézetben */
+        }
+
+        .fc-daygrid-day {
+            height: 150px !important; /* Nagyobb napi cellák a havi nézetben */
+        }
+
+        .fc-timegrid-event {
+            min-height: 2.5rem !important; /* Minimum magasság az eseményeknek */
         }
 
         @media (max-width: 768px) {
@@ -515,12 +532,20 @@ ob_end_flush();
             }
 
             #calendar {
-                padding: 2rem;
+                padding: 1rem;
             }
 
             .fc-event {
-                font-size: 0.85rem;
-                padding: 0.5rem;
+                font-size: 1rem;
+                padding: 0.6rem;
+            }
+
+            .fc-timegrid-slot {
+                height: 2rem !important;
+            }
+
+            .fc-daygrid-day {
+                height: 120px !important;
             }
         }
 
@@ -709,7 +734,7 @@ ob_end_flush();
                     <div id="appointmentList">
                         <?php foreach ($appointments as $appointment): ?>
                             <div class="subscription-card"
-                                data-title="<?php echo htmlspecialchars($appointment['title']); ?>"
+                                data-title christ="<?php echo htmlspecialchars($appointment['title']); ?>"
                                 data-user="<?php echo htmlspecialchars($appointment['user_name'] ?? ''); ?>"
                                 data-client="<?php echo htmlspecialchars($appointment['CompanyName'] ?? ''); ?>"
                                 data-description="<?php echo htmlspecialchars($appointment['description'] ?? ''); ?>">
@@ -766,10 +791,10 @@ ob_end_flush();
                             <div class="subscription-card"
                                 data-client="<?php echo htmlspecialchars($subscription['client_name'] ?? ''); ?>"
                                 data-user="<?php echo htmlspecialchars($subscription['user_name'] ?? ''); ?>"
-                                data-service="<?php echo htmlspecialchars($subscription['service_id']); ?>">
+                                data-service="<?php echo htmlspecialchars($subscription['service_name']); ?>">
                                 <h6><strong>Ügyfél:</strong> <?php echo htmlspecialchars($subscription['client_name'] ?? 'Nincs megadva'); ?></h6>
                                 <p><strong>Felhasználó:</strong> <?php echo htmlspecialchars($subscription['user_name'] ?? 'Nincs hozzárendelve'); ?></p>
-                                <p><strong>Előfizetés típusa:</strong> <?php echo htmlspecialchars($subscription['service_id']); ?></p>
+                                <p><strong>Előfizetés típusa:</strong> <?php echo htmlspecialchars($subscription['service_name']); ?></p>
                                 <p><strong>Státusz:</strong> <span class="status-<?php echo $subscription['status']; ?>">
                                         <?php echo $subscription['status'] === 'active' ? 'Aktív' : ($subscription['status'] === 'expired' ? 'Lejárt' : 'Lemondva'); ?>
                                     </span></p>
@@ -825,8 +850,8 @@ ob_end_flush();
                 cards.forEach(card => {
                     const client = card.getAttribute('data-client').toLowerCase();
                     const user = card.getAttribute('data-user').toLowerCase();
-                    const type = card.getAttribute('data-type').toLowerCase();
-                    card.style.display = (client.includes(query) || user.includes(query) || type.includes(query)) ? '' : 'none';
+                    const service = card.getAttribute('data-service').toLowerCase();
+                    card.style.display = (client.includes(query) || user.includes(query) || service.includes(query)) ? '' : 'none';
                 });
             }
         });
@@ -850,7 +875,12 @@ ob_end_flush();
                     slotMinTime: '07:00:00',
                     slotMaxTime: '17:00:00',
                     allDaySlot: false,
-                    height: 900,
+                    slotDuration: '00:30:00', 
+                    slotLabelInterval: '01:00:00', 
+                    slotHeight: 50, 
+                    height: 'auto', 
+                    expandRows: true, 
+                    eventMinHeight: 50, 
                     eventContent: function(arg) {
                         var startTime = arg.event.start.toLocaleTimeString('hu-HU', {
                             hour: '2-digit',
@@ -862,9 +892,9 @@ ob_end_flush();
                         }) : '';
                         return {
                             html: `
-                            <div class="fc-event-main">
-                                <strong>${arg.event.extendedProps.user_name}</strong><br>
-                                <small>${startTime} - ${endTime}</small>
+                            <div class="fc-event-main" style="padding: 5px;">
+                                <strong style="font-size: 1.2rem;">${arg.event.extendedProps.user_name}</strong><br>
+                                <small style="font-size: 1rem;">${startTime} - ${endTime}</small>
                             </div>
                         `
                         };
