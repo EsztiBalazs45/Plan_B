@@ -1,24 +1,4 @@
-<?php
-require_once '../includes/header.php'; // Tartalmazza a meglévő fejlécet
-require_once '../includes/config.php'; // Tartalmazza a konfigurációt
-
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "asd";
-
-try {
-    $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $stmt = $conn->prepare("SELECT * FROM dowloaddata");
-    $stmt->execute();
-    $documents = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch(PDOException $e) {
-    echo "Kapcsolódási hiba: " . $e->getMessage();
-    exit;
-}
-?>
-
+<?php require_once '../includes/header.php'; ?>
 <!DOCTYPE html>
 <html lang="hu">
 <head>
@@ -29,6 +9,7 @@ try {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
+        /* A te eredeti stílusod változatlanul marad */
         body {
             background: linear-gradient(135deg, #f0f4f8, #334155);
             font-family: 'Roboto', sans-serif;
@@ -134,23 +115,57 @@ try {
 <body>
     <div class="content-wrapper">
         <h1>Letölthető Dokumentumok</h1>
-        <?php if (count($documents) > 0): ?>
-            <div class="document-grid">
-                <?php foreach ($documents as $doc): ?>
-                    <div class="document-card">
-                        <h5><?php echo htmlspecialchars($doc['title']); ?></h5>
-                        <p><?php echo htmlspecialchars($doc['description']); ?></p>
-                        <a href="download.php?file=<?php echo urlencode($doc['DataFile']); ?>" class="download-btn" download>
-                            <i class="fas fa-download"></i> Letöltés
-                        </a>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        <?php else: ?>
-            <div class="no-documents">
-                Jelenleg nincsenek letölthető dokumentumok.
-            </div>
-        <?php endif; ?>
+        <div id="document-container"></div>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch("fetch_documents.php")
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById("document-container");
+
+                    if (data.error) {
+                        container.innerHTML = `<div class="no-documents">${data.error}</div>`;
+                        return;
+                    }
+
+                    if (data.length > 0) {
+                        let grid = '<div class="document-grid">';
+                        data.forEach(doc => {
+                            grid += `
+                                <div class="document-card">
+                                    <h5>${escapeHtml(doc.title)}</h5>
+                                    <p>${escapeHtml(doc.description)}</p>
+                                    <a href="download.php?file=${encodeURIComponent(doc.DataFile)}" class="download-btn" download>
+                                        <i class="fas fa-download"></i> Letöltés
+                                    </a>
+                                </div>
+                            `;
+                        });
+                        grid += '</div>';
+                        container.innerHTML = grid;
+                    } else {
+                        container.innerHTML = '<div class="no-documents">Jelenleg nincsenek letölthető dokumentumok.</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error("Hiba:", error);
+                    document.getElementById("document-container").innerHTML = 
+                        '<div class="no-documents">Hiba történt az adatok betöltésekor.</div>';
+                });
+        });
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+    </script>
 </body>
 </html>

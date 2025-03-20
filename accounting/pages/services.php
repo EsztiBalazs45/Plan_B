@@ -9,7 +9,6 @@ if (!isLoggedIn()) {
 
 $user_id = $_SESSION['user_id'];
 
-// Adatbázis kapcsolat (mysqli)
 $servername = "localhost";
 $username = "root";
 $password = "";
@@ -389,7 +388,7 @@ ob_end_flush();
                     return false;
                 }
 
-                return true; // Ha minden validáció sikeres, a form elküldhető
+                return true;
             });
         });
     </script>

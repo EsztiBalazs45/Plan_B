@@ -7,7 +7,6 @@ if (!isLoggedIn()) {
     exit();
 }
 
-// Ügyfelek lekérdezése (csak kompatibilitás miatt)
 $stmt = $conn->prepare("SELECT id, CompanyName FROM clients WHERE user_id = ?");
 $stmt->execute([$_SESSION['user_id']]);
 $clients = $stmt->fetchAll(PDO::FETCH_ASSOC);

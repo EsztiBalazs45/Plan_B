@@ -1,8 +1,8 @@
 <?php
 $servername = "localhost";
-$username = "root";  // Állítsd be az adatbázis felhasználót
+$username = "root";  
 $password = "";
-$dbname = "asd";  // Adatbázis neve
+$dbname = "asd";  
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 

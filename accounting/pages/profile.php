@@ -1,161 +1,11 @@
 <?php
 ob_start();
+session_start();
 require_once '../includes/header.php';
 
-if (!isLoggedIn()) {
+if (!isset($_SESSION['user_id'])) {
     header('Location: login.php');
     exit();
-}
-
-$user_id = $_SESSION['user_id'];
-
-// Adatbázis kapcsolat (mysqli)
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "asd";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-if ($conn->connect_error) {
-    die("Kapcsolódási hiba: " . $conn->connect_error);
-}
-
-// Egyedi fetchAll függvény
-function fetchAll($result) {
-    $rows = [];
-    while ($row = $result->fetch_assoc()) {
-        $rows[] = $row;
-    }
-    return $rows;
-}
-
-// Get user data
-$stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
-$user = $result->fetch_assoc();
-
-// Get all active subscriptions with payment details
-$stmt = $conn->prepare("
-    SELECT s.*, srv.service_name, pd.cardholder_name, pd.card_number, pd.expiry_date, pd.cvv
-    FROM subscriptions s
-    JOIN services srv ON s.service_id = srv.service_id
-    LEFT JOIN payment_details pd ON s.id = pd.subscription_id AND s.user_id = pd.user_id
-    WHERE s.user_id = ? AND s.status = 'active'
-");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
-$subscriptions = fetchAll($result);
-
-// Handle profile update
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['update_profile'])) {
-        $name = htmlspecialchars($_POST['name']);
-        $email = htmlspecialchars($_POST['email']);
-        $username = htmlspecialchars($_POST['username']);
-
-        $stmt = $conn->prepare("SELECT id FROM users WHERE email = ? AND id != ?");
-        $stmt->bind_param("si", $email, $user_id);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        if ($result->num_rows > 0) {
-            $_SESSION['message'] = 'Ez az email cím már foglalt!';
-            $_SESSION['message_type'] = 'danger';
-        } else {
-            $stmt = $conn->prepare("SELECT id FROM users WHERE username = ? AND id != ?");
-            $stmt->bind_param("si", $username, $user_id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            if ($result->num_rows > 0) {
-                $_SESSION['message'] = 'Ez a felhasználónév már foglalt!';
-                $_SESSION['message_type'] = 'danger';
-            } else {
-                $stmt = $conn->prepare("UPDATE users SET name = ?, email = ?, username = ? WHERE id = ?");
-                $stmt->bind_param("sssi", $name, $email, $username, $user_id);
-                if ($stmt->execute()) {
-                    $_SESSION['name'] = $name;
-                    $_SESSION['message'] = 'Profil sikeresen frissítve!';
-                    $_SESSION['message_type'] = 'success';
-                    header('Location: profile.php');
-                    exit();
-                }
-            }
-        }
-    }
-
-    // Handle subscription cancellation
-    if (isset($_POST['cancel_subscription'])) {
-        $subscription_id = (int)$_POST['subscription_id'];
-        $conn->begin_transaction();
-        try {
-            $stmt = $conn->prepare("DELETE FROM payment_details WHERE subscription_id = ? AND user_id = ?");
-            $stmt->bind_param("ii", $subscription_id, $user_id);
-            $stmt->execute();
-
-            $stmt = $conn->prepare("DELETE FROM subscriptions WHERE id = ? AND user_id = ?");
-            $stmt->bind_param("ii", $subscription_id, $user_id);
-            $stmt->execute();
-
-            $conn->commit();
-            $_SESSION['message'] = 'Előfizetés sikeresen lemondva és törölve!';
-            $_SESSION['message_type'] = 'success';
-            header('Location: profile.php');
-            exit();
-        } catch (Exception $e) {
-            $conn->rollback();
-            error_log("Hiba az előfizetés törlése során: " . $e->getMessage());
-            $_SESSION['message'] = 'Hiba történt az előfizetés törlése közben!';
-            $_SESSION['message_type'] = 'danger';
-        }
-    }
-
-    // Handle payment details update
-    if (isset($_POST['update_payment'])) {
-        $subscription_id = (int)$_POST['subscription_id'];
-        $cardholder_name = htmlspecialchars($_POST['cardholder_name']);
-        $card_number = htmlspecialchars($_POST['card_number']);
-        $expiry_date = htmlspecialchars($_POST['expiry_date']);
-        $cvv = htmlspecialchars($_POST['cvv']);
-
-        $stmt = $conn->prepare("UPDATE payment_details SET cardholder_name = ?, card_number = ?, expiry_date = ?, cvv = ? WHERE subscription_id = ? AND user_id = ?");
-        $stmt->bind_param("ssssii", $cardholder_name, $card_number, $expiry_date, $cvv, $subscription_id, $user_id);
-        if ($stmt->execute()) {
-            $_SESSION['message'] = 'Fizetési adatok sikeresen frissítve!';
-            $_SESSION['message_type'] = 'success';
-        } else {
-            $_SESSION['message'] = 'Hiba történt a fizetési adatok frissítése közben!';
-            $_SESSION['message_type'] = 'danger';
-        }
-        header('Location: profile.php');
-        exit();
-    }
-
-    // Handle password change
-    if (isset($_POST['change_password'])) {
-        $current_password = $_POST['current_password'];
-        $new_password = $_POST['new_password'];
-        $confirm_password = $_POST['confirm_password'];
-
-        if ($new_password !== $confirm_password) {
-            $_SESSION['message'] = 'Az új jelszavak nem egyeznek!';
-            $_SESSION['message_type'] = 'danger';
-        } elseif (!password_verify($current_password, $user['password'])) {
-            $_SESSION['message'] = 'A jelenlegi jelszó helytelen!';
-            $_SESSION['message_type'] = 'danger';
-        } else {
-            $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
-            $stmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
-            $stmt->bind_param("si", $hashed_password, $user_id);
-            if ($stmt->execute()) {
-                $_SESSION['message'] = 'Jelszó sikeresen megváltoztatva!';
-                $_SESSION['message_type'] = 'success';
-                header('Location: profile.php');
-                exit();
-            }
-        }
-    }
 }
 ob_end_flush();
 ?>
@@ -172,6 +22,7 @@ ob_end_flush();
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
+        /* Az eredeti CSS változatlanul marad */
         body {
             background: linear-gradient(135deg, #f0f4f8, #334155);
             font-family: 'Poppins', sans-serif;
@@ -302,23 +153,13 @@ ob_end_flush();
 </head>
 <body>
     <div class="content-wrapper">
-        <?php if (isset($_SESSION['message'])): ?>
-            <div class="alert alert-<?php echo $_SESSION['message_type']; ?> alert-dismissible fade show" role="alert">
-                <?php echo $_SESSION['message']; ?>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-            <?php unset($_SESSION['message'], $_SESSION['message_type']); ?>
-        <?php endif; ?>
+        <div id="message-container"></div>
 
         <div class="row">
             <!-- Profil összefoglaló -->
             <div class="col-md-4">
                 <div class="card mb-4">
-                    <div class="card-body text-center">
-                        <h4><?php echo htmlspecialchars($user['name']); ?></h4>
-                        <p class="text-muted"><i class="fas fa-envelope"></i> <?php echo htmlspecialchars($user['email']); ?></p>
-                        <p class="text-muted"><i class="fas fa-user"></i> <?php echo htmlspecialchars($user['username']); ?></p>
-                    </div>
+                    <div class="card-body text-center" id="profile-summary"></div>
                 </div>
             </div>
 
@@ -330,20 +171,20 @@ ob_end_flush();
                         <h5 class="mb-0">Profil szerkesztése</h5>
                     </div>
                     <div class="card-body">
-                        <form method="POST" action="" class="needs-validation" novalidate>
+                        <form id="profile-form" class="needs-validation" novalidate>
                             <div class="mb-3">
                                 <label for="name" class="form-label">Teljes név</label>
-                                <input type="text" class="form-control" id="name" name="name" value="<?php echo htmlspecialchars($user['name']); ?>" required>
+                                <input type="text" class="form-control" id="name" name="name" required>
                             </div>
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email cím</label>
-                                <input type="email" class="form-control" id="email" name="email" value="<?php echo htmlspecialchars($user['email']); ?>" required>
+                                <input type="email" class="form-control" id="email" name="email" required>
                             </div>
                             <div class="mb-3">
                                 <label for="username" class="form-label">Felhasználónév</label>
-                                <input type="text" class="form-control" id="username" name="username" value="<?php echo htmlspecialchars($user['username']); ?>" required>
+                                <input type="text" class="form-control" id="username" name="username" required>
                             </div>
-                            <button type="submit" name="update_profile" class="btn btn-primary">Profil mentése</button>
+                            <button type="submit" class="btn btn-primary">Profil mentése</button>
                         </form>
                     </div>
                 </div>
@@ -353,61 +194,7 @@ ob_end_flush();
                     <div class="card-header">
                         <h5 class="mb-0">Aktív előfizetéseim</h5>
                     </div>
-                    <div class="card-body">
-                        <?php if (empty($subscriptions)): ?>
-                            <p class="text-muted">Nincs aktív előfizetésed. <a href="services.php" class="btn btn-primary btn-sm">Válassz egyet itt!</a></p>
-                        <?php else: ?>
-                            <div class="row">
-                                <?php foreach ($subscriptions as $sub): ?>
-                                    <div class="col-md-6 mb-3">
-                                        <div class="card subscription-card">
-                                            <div class="card-body">
-                                                <h6><?php echo htmlspecialchars($sub['service_name']); ?></h6>
-                                                <p>Kezdete: <?php echo date('Y-m-d', strtotime($sub['start_date'])); ?></p>
-                                                <?php if ($sub['cardholder_name']): ?>
-                                                    <p>Fizetési adatok:</p>
-                                                    <p>Kártyatulajdonos: <?php echo htmlspecialchars($sub['cardholder_name']); ?></p>
-                                                    <p>Kártyaszám: ****-****-****-<?php echo substr(htmlspecialchars($sub['card_number']), -4); ?></p>
-                                                    <p>Lejárat: <?php echo htmlspecialchars($sub['expiry_date']); ?></p>
-                                                    <p>CVV: ***</p>
-                                                    <button class="btn btn-primary btn-sm mt-2 edit-payment-btn" data-subscription-id="<?php echo $sub['id']; ?>">Fizetési adatok szerkesztése</button>
-                                                <?php endif; ?>
-                                                <form method="POST" class="mt-2">
-                                                    <input type="hidden" name="subscription_id" value="<?php echo $sub['id']; ?>">
-                                                    <button type="submit" name="cancel_subscription" class="btn btn-danger btn-sm" onclick="return confirm('Biztosan lemondod ezt az előfizetést?');">Lemondás</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                        <!-- Fizetési adatok szerkesztése form -->
-                                        <div class="payment-details-form" id="payment-form-<?php echo $sub['id']; ?>">
-                                            <form method="POST" class="mt-3">
-                                                <input type="hidden" name="subscription_id" value="<?php echo $sub['id']; ?>">
-                                                <div class="mb-3">
-                                                    <label for="cardholder_name_<?php echo $sub['id']; ?>" class="form-label">Kártyatulajdonos neve</label>
-                                                    <input type="text" class="form-control" id="cardholder_name_<?php echo $sub['id']; ?>" name="cardholder_name" value="<?php echo htmlspecialchars($sub['cardholder_name'] ?? ''); ?>" required>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label for="card_number_<?php echo $sub['id']; ?>" class="form-label">Kártyaszám</label>
-                                                    <input type="number" class="form-control" id="card_number_<?php echo $sub['id']; ?>" name="card_number" value="<?php echo htmlspecialchars($sub['card_number'] ?? ''); ?>" required>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label for="expiry_date_<?php echo $sub['id']; ?>" class="form-label">Lejárati dátum</label>
-                                                    <input type="text" class="form-control" id="expiry_date_<?php echo $sub['id']; ?>" name="expiry_date" value="<?php echo htmlspecialchars($sub['expiry_date'] ?? ''); ?>" placeholder="MM/YY" required>
-                                                </div>
-                                                <div class="mb-3">
-                                                    <label for="cvv_<?php echo $sub['id']; ?>" class="form-label">CVV</label>
-                                                    <input type="number" class="form-control" id="cvv_<?php echo $sub['id']; ?>" name="cvv" value="<?php echo htmlspecialchars($sub['cvv'] ?? ''); ?>" required>
-                                                </div>
-                                                <button type="submit" name="update_payment" class="btn btn-primary btn-sm">Mentés</button>
-                                                <button type="button" class="btn btn-secondary btn-sm cancel-edit-btn" data-subscription-id="<?php echo $sub['id']; ?>">Mégse</button>
-                                            </form>
-                                        </div>
-                                    </div>
-                                <?php endforeach; ?>
-                            </div>
-                            <p><a href="services.php" class="btn btn-primary">Új előfizetés hozzáadása</a></p>
-                        <?php endif; ?>
-                    </div>
+                    <div class="card-body" id="subscriptions-container"></div>
                 </div>
 
                 <!-- Jelszó módosítása -->
@@ -416,7 +203,7 @@ ob_end_flush();
                         <h5 class="mb-0">Jelszó módosítása</h5>
                     </div>
                     <div class="card-body">
-                        <form method="POST" action="" class="needs-validation" novalidate>
+                        <form id="password-form" class="needs-validation" novalidate>
                             <div class="mb-3">
                                 <label for="current_password" class="form-label">Jelenlegi jelszó</label>
                                 <input type="password" class="form-control" id="current_password" name="current_password" required>
@@ -430,7 +217,7 @@ ob_end_flush();
                                 <label for="confirm_password" class="form-label">Új jelszó megerősítése</label>
                                 <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
                             </div>
-                            <button type="submit" name="change_password" class="btn btn-primary">Jelszó módosítása</button>
+                            <button type="submit" class="btn btn-primary">Jelszó módosítása</button>
                         </form>
                     </div>
                 </div>
@@ -439,6 +226,227 @@ ob_end_flush();
     </div>
 
     <script>
+        // Üzenetek megjelenítése
+        function showMessage(message, type) {
+            const container = document.getElementById('message-container');
+            container.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+        }
+
+        // Profil és előfizetések betöltése
+        document.addEventListener("DOMContentLoaded", function() {
+            fetch("../api/profile.php", {
+                method: "GET",
+                headers: { "Accept": "application/json" }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP hiba: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                if (data.error) {
+                    showMessage(data.error, "danger");
+                    return;
+                }
+
+                // Profil összefoglaló
+                const profileSummary = document.getElementById("profile-summary");
+                profileSummary.innerHTML = `
+                    <h4>${data.user.name}</h4>
+                    <p class="text-muted"><i class="fas fa-envelope"></i> ${data.user.email}</p>
+                    <p class="text-muted"><i class="fas fa-user"></i> ${data.user.username}</p>
+                `;
+
+                // Profil űrlap kitöltése
+                document.getElementById("name").value = data.user.name;
+                document.getElementById("email").value = data.user.email;
+                document.getElementById("username").value = data.user.username;
+
+                // Előfizetések megjelenítése
+                const subscriptionsContainer = document.getElementById("subscriptions-container");
+                if (data.subscriptions.length === 0) {
+                    subscriptionsContainer.innerHTML = `
+                        <p class="text-muted">Nincs aktív előfizetésed. <a href="services.php" class="btn btn-primary btn-sm">Válassz egyet itt!</a></p>
+                    `;
+                } else {
+                    let html = '<div class="row">';
+                    data.subscriptions.forEach(sub => {
+                        html += `
+                            <div class="col-md-6 mb-3">
+                                <div class="card subscription-card">
+                                    <div class="card-body">
+                                        <h6>${sub.service_name}</h6>
+                                        <p>Kezdete: ${new Date(sub.start_date).toISOString().split('T')[0]}</p>
+                                        ${sub.cardholder_name ? `
+                                            <p>Fizetési adatok:</p>
+                                            <p>Kártyatulajdonos: ${sub.cardholder_name}</p>
+                                            <p>Kártyaszám: ****-****-****-${sub.card_number.slice(-4)}</p>
+                                            <p>Lejárat: ${sub.expiry_date}</p>
+                                            <p>CVV: ***</p>
+                                            <button class="btn btn-primary btn-sm mt-2 edit-payment-btn" data-subscription-id="${sub.id}">Fizetési adatok szerkesztése</button>
+                                        ` : ''}
+                                        <form class="mt-2 cancel-subscription-form" data-subscription-id="${sub.id}">
+                                            <button type="submit" class="btn btn-danger btn-sm">Lemondás</button>
+                                        </form>
+                                    </div>
+                                </div>
+                                <div class="payment-details-form" id="payment-form-${sub.id}">
+                                    <form class="mt-3 payment-details-form-inner" data-subscription-id="${sub.id}">
+                                        <input type="hidden" name="subscription_id" value="${sub.id}">
+                                        <div class="mb-3">
+                                            <label for="cardholder_name_${sub.id}" class="form-label">Kártyatulajdonos neve</label>
+                                            <input type="text" class="form-control" id="cardholder_name_${sub.id}" name="cardholder_name" value="${sub.cardholder_name || ''}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="card_number_${sub.id}" class="form-label">Kártyaszám</label>
+                                            <input type="number" class="form-control" id="card_number_${sub.id}" name="card_number" value="${sub.card_number || ''}" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="expiry_date_${sub.id}" class="form-label">Lejárati dátum</label>
+                                            <input type="text" class="form-control" id="expiry_date_${sub.id}" name="expiry_date" value="${sub.expiry_date || ''}" placeholder="MM/YY" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="cvv_${sub.id}" class="form-label">CVV</label>
+                                            <input type="number" class="form-control" id="cvv_${sub.id}" name="cvv" value="${sub.cvv || ''}" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary btn-sm">Mentés</button>
+                                        <button type="button" class="btn btn-secondary btn-sm cancel-edit-btn" data-subscription-id="${sub.id}">Mégse</button>
+                                    </form>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    html += '</div><p><a href="services.php" class="btn btn-primary">Új előfizetés hozzáadása</a></p>';
+                    subscriptionsContainer.innerHTML = html;
+                }
+            })
+            .catch(error => {
+                console.error("Hiba:", error);
+                showMessage("Hiba történt az adatok betöltésekor: " + error.message, "danger");
+            });
+        });
+
+        // Profil mentése
+        document.getElementById("profile-form").addEventListener("submit", function(e) {
+            e.preventDefault();
+            if (!this.checkValidity()) return;
+
+            const data = {
+                name: document.getElementById("name").value,
+                email: document.getElementById("email").value,
+                username: document.getElementById("username").value
+            };
+
+            fetch("../api/profile.php", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP hiba: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                showMessage(data.message || data.error, data.message ? "success" : "danger");
+                if (data.message) location.reload();
+            })
+            .catch(error => showMessage("Hiba: " + error.message, "danger"));
+        });
+
+        // Előfizetés lemondása
+        $(document).on("submit", ".cancel-subscription-form", function(e) {
+            e.preventDefault();
+            if (!confirm("Biztosan lemondod ezt az előfizetést?")) return;
+
+            const subscriptionId = $(this).data("subscription-id");
+            fetch("../api/profile.php", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ subscription_id: subscriptionId })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP hiba: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                showMessage(data.message || data.error, data.message ? "success" : "danger");
+                if (data.message) location.reload();
+            })
+            .catch(error => showMessage("Hiba: " + error.message, "danger"));
+        });
+
+        // Fizetési adatok szerkesztése
+        $(document).on("click", ".edit-payment-btn", function() {
+            const subscriptionId = $(this).data("subscription-id");
+            $(`#payment-form-${subscriptionId}`).addClass("active");
+        });
+
+        $(document).on("click", ".cancel-edit-btn", function() {
+            const subscriptionId = $(this).data("subscription-id");
+            $(`#payment-form-${subscriptionId}`).removeClass("active");
+        });
+
+        $(document).on("submit", ".payment-details-form-inner", function(e) {
+            e.preventDefault();
+            const subscriptionId = $(this).data("subscription-id");
+            const data = {
+                update_payment: true,
+                subscription_id: subscriptionId,
+                cardholder_name: document.getElementById(`cardholder_name_${subscriptionId}`).value,
+                card_number: document.getElementById(`card_number_${subscriptionId}`).value,
+                expiry_date: document.getElementById(`expiry_date_${subscriptionId}`).value,
+                cvv: document.getElementById(`cvv_${subscriptionId}`).value
+            };
+
+            fetch("../api/profile.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP hiba: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                showMessage(data.message || data.error, data.message ? "success" : "danger");
+                if (data.message) location.reload();
+            })
+            .catch(error => showMessage("Hiba: " + error.message, "danger"));
+        });
+
+        // Jelszó módosítása
+        document.getElementById("password-form").addEventListener("submit", function(e) {
+            e.preventDefault();
+            if (!this.checkValidity()) return;
+
+            const data = {
+                change_password: true,
+                current_password: document.getElementById("current_password").value,
+                new_password: document.getElementById("new_password").value,
+                confirm_password: document.getElementById("confirm_password").value
+            };
+
+            fetch("../api/profile.php", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP hiba: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                showMessage(data.message || data.error, data.message ? "success" : "danger");
+                if (data.message) location.reload();
+            })
+            .catch(error => showMessage("Hiba: " + error.message, "danger"));
+        });
+
+        // Form validáció
         (function() {
             'use strict';
             var forms = document.querySelectorAll('.needs-validation');
@@ -463,17 +471,6 @@ ob_end_flush();
                 }, false);
             });
         })();
-
-        // Fizetési adatok szerkesztése
-        $('.edit-payment-btn').on('click', function() {
-            const subscriptionId = $(this).data('subscription-id');
-            $(`#payment-form-${subscriptionId}`).addClass('active');
-        });
-
-        $('.cancel-edit-btn').on('click', function() {
-            const subscriptionId = $(this).data('subscription-id');
-            $(`#payment-form-${subscriptionId}`).removeClass('active');
-        });
     </script>
 
     <?php require_once '../includes/footer.php'; ?>
