@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Már 19. 11:24
+-- Létrehozás ideje: 2025. Már 21. 11:55
 -- Kiszolgáló verziója: 10.4.32-MariaDB
 -- PHP verzió: 8.2.12
 
@@ -89,14 +89,12 @@ INSERT INTO `appointments` (`id`, `status`, `description`, `user_id`, `title`, `
 (25, 'canceled', 'Fugit nemo nulla sunt.', 9, '', '2025-03-05 00:00:00', '2025-03-05 00:00:00', NULL),
 (48, 'confirmed', 'asdadasdasdad', 106, 'Valami', '2025-03-11 07:00:00', '2025-03-11 07:30:00', 77),
 (50, 'confirmed', 'asdasdasdsadsa', 106, 'valami', '2025-03-13 07:00:00', '2025-03-13 07:30:00', 77),
-(54, 'canceled', 'asdadsasdadasd', 106, 'valami', '2025-03-21 09:00:00', '2025-03-21 09:30:00', 77),
 (56, 'canceled', 'megbeszéltünk mindent telefonon', 108, 'Zárás megbeszélést', '2025-03-18 11:00:00', '2025-03-18 11:30:00', 78),
 (58, 'confirmed', 'adadsdsadadsadas', 106, 'valami', '2025-03-19 09:00:00', '2025-03-19 09:30:00', 77),
-(59, 'canceled', 'asdadasd', 106, 'Proba', '2025-03-18 10:00:00', '2025-03-18 10:30:00', 77),
 (60, 'confirmed', 'valami', 106, 'proba', '2025-03-18 07:00:00', '2025-03-18 07:30:00', 77),
-(61, 'pending', 'asdasdqweqtrqqe', 106, 'asdsadsdad', '2025-03-18 10:00:00', '2025-03-18 10:30:00', 77),
+(61, 'confirmed', 'asdasdqweqtrqqe', 106, 'asdsadsdad', '2025-03-18 10:00:00', '2025-03-18 10:30:00', 77),
 (62, 'confirmed', 'sadasdasdsadd', 106, 'asdsadadas', '2025-03-19 13:30:00', '2025-03-19 14:00:00', 77),
-(63, 'confirmed', 'asdasdsaddasdasdasdsad', 108, 'valami', '2025-03-20 10:00:00', '2025-03-20 10:30:00', 78);
+(64, 'confirmed', 'asdsadsadasd', 108, 'valami', '2025-03-21 07:00:00', '2025-03-21 07:30:00', 78);
 
 -- --------------------------------------------------------
 
@@ -171,7 +169,7 @@ INSERT INTO `clients` (`id`, `user_id`, `CompanyName`, `tax_number`, `registrati
 (23, 5, 'Kaia Davis', '483783280', '717114730', '4335 Antonette Walk\nWest Arianna, UT 95815-2377', 'Jasper Hodkiewicz', '(606) 980-8609', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (24, 9, 'Cierra Wilderman I', '792825967', '433428173', '20951 Maryjane Extension Suite 183\nRathfort, AR 44973', 'Kaylie Kilback', '984-682-0764', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (25, 7, 'Patrick Casper', '946581310', '705672767', '10489 Paul Mill Suite 962\nSouth Jailyn, OK 82168', 'Koby Watsica', '+1-270-605-3869', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(26, 5, 'Ron Schumm', '110134054', '232767640', '261 Aiyana Unions\nRomaguerachester, WA 29022-1606', 'Dean Leannon', '+1-786-337-8466', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
+(26, 5, 'Valami_amit_kamit_Kft', '110134054', '232767640', '261 Aiyana Unions\nRomaguerachester, WA 29022-1606', 'Dean Leannon', '+1-786-337-8466', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (27, 6, 'Prof. Ansley Hessel MD', '336082325', '500848860', '665 Wilton Pines Apt. 926\nHackettside, RI 29356', 'Hilma Koepp', '480.546.8583', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (28, 8, 'Adam Wolff', '359661043', '757534800', '40791 Funk Lodge\nAngelberg, ID 44467-9328', 'Corene Becker PhD', '1-415-510-2052', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (29, 9, 'Sandra Zulauf', '820798607', '484638431', '46101 Konopelski Points\nLake Shaina, DC 59678', 'Mrs. Oma Gorczany', '234.776.5304', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
@@ -221,9 +219,9 @@ INSERT INTO `clients` (`id`, `user_id`, `CompanyName`, `tax_number`, `registrati
 (73, 6, 'Christelle Stoltenberg', '755171641', '333463617', '532 Blanda Rest Apt. 873\nLake Arnaldo, CO 62622-1868', 'Chester Bradtke', '240.757.0463', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (74, 5, 'Sandra Johnston', '766593340', '234166993', '730 Velma Extension Suite 851\nCedrickmouth, OK 32568', 'Mr. Constantin Hand II', '(458) 899-7490', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (75, 1, 'valami Kft', '410667237', '454582596', '96132 Romaguera Unions\nPort Hymanton, NY 85038-3910', 'Ms. Kacie Nicolas', '+1.937.620.6801', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
-(77, 106, 'Corki_repcsi Kft', '2145172185718', '945678213', 'Pécs Valami utca 27', 'Kis Pál', '+36303521472', NULL, NULL),
+(77, 106, 'Corki_repcsi Kft', '2145172185718', '945678213', 'Pécs Valami utca 27', 'Kis János', '+36303521472', NULL, NULL),
 (78, 108, 'Tham_Catch_Kft', '27560384-2-08', '5430689124', 'Budapest Sport utca 42', 'Kalapos Béla', '+36202546894', NULL, NULL),
-(79, 109, 'Showourlazer Bt', '27564784-2-10', '5520664124', 'Mosonmagyaróvár Várkapu utca 14', 'Kurcsics Angéla', '+30702543367', NULL, NULL);
+(79, 109, 'Show_Our_Lazer_Bt', '27564784-2-10', '5520664124', 'Mosonmagyaróvár Várkapu utca 14', 'Kurcsics Angéla', '+30702543367', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -635,8 +633,7 @@ INSERT INTO `users` (`id`, `name`, `username`, `email`, `role`, `email_verified_
 (100, 'Mrs. Brooke Beier V', 'zboncak.alessandro', 'merritt41@example.com', 'user', '2025-02-25 15:18:48', '$2y$12$G5HgiiilYqaMdvbV5ZUPLetbrxq5F8RwljjBH3VuTy8zg5uf1kLb.', 'iUqxtJdGPe', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (102, 'kis andras', 'asdasd', 'andras@jedlik.eu', 'user', NULL, '$2y$10$jss4mJeZeumuxN46mE6qteGwdb2XJ2oq0QsrVAIO7ANaQa8.6BlUy', NULL, NULL, NULL),
 (103, 'kalap tamás', 'Kalapos', 'kalap@asd.hu', 'user', NULL, '$2y$10$/nrCeqHNM.zgYD0/No0T1eStHU.YnIIN.mmD..IFNbuESOiOXQ9oO', NULL, NULL, NULL),
-(105, 'Kulcs József', 'Kulacs', 'Kulcsa@asd.com', 'user', NULL, '$2y$10$Lf1ZSos4h2WJ1xIT1HRU6Opx4GWU2JBbPEc/5z9FXkh2/VyTDR0Ta', NULL, NULL, NULL),
-(106, 'Tac András', 'ZicZac', 'tictac@jedlik.hu', 'admin', NULL, '$2y$10$wYqjESQ793BG1QnUk.EGi.YzqDy3ybK534KxuOaMn2.dGP7HU0eke', NULL, NULL, NULL),
+(106, 'Tac András', 'TicTac', 'tictac@jedlik.hu', 'admin', NULL, '$2y$10$wYqjESQ793BG1QnUk.EGi.YzqDy3ybK534KxuOaMn2.dGP7HU0eke', NULL, NULL, NULL),
 (107, 'Kala Pál', 'kalap', 'kala@gamil.com', 'user', NULL, '$2y$10$4So5HV/woIrefXFOC75bnuJjzYNXOkzs72v8xB0v5iLF3K7n/1GJ2', NULL, NULL, NULL),
 (108, 'Kis Pista', 'Pifta', 'Pistike@gmail.com', 'user', NULL, '$2y$10$9mhHAae1HoM44PQolW0Rvez.HlWAPC.gcGEch7YP9QUIIy3KcO.sa', NULL, NULL, NULL),
 (109, 'Lézer János', 'Lézer Jani', 'lezerjani@gamil.com', 'user', NULL, '$2y$10$Tk4nI8U4IkABXkCawmdO1evL.VL59HZkh9Q0FthqcNA8kHtg5y6fe', NULL, NULL, NULL);
@@ -794,13 +791,13 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT a táblához `appointments`
 --
 ALTER TABLE `appointments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=64;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=65;
 
 --
 -- AUTO_INCREMENT a táblához `clients`
 --
 ALTER TABLE `clients`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=80;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=81;
 
 --
 -- AUTO_INCREMENT a táblához `dowloaddata`
@@ -848,7 +845,7 @@ ALTER TABLE `service_users`
 -- AUTO_INCREMENT a táblához `subscriptions`
 --
 ALTER TABLE `subscriptions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=50;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=51;
 
 --
 -- AUTO_INCREMENT a táblához `users`
