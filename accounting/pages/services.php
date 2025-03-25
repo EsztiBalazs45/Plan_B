@@ -8,68 +8,6 @@ if (!isLoggedIn()) {
 }
 
 $user_id = $_SESSION['user_id'];
-
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "asd";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
-if ($conn->connect_error) {
-    die("Kapcsolódási hiba: " . $conn->connect_error);
-}
-
-function fetchAll($result)
-{
-    $rows = [];
-    while ($row = $result->fetch_assoc()) {
-        $rows[] = $row;
-    }
-    return $rows;
-}
-
-$result = $conn->query("SELECT * FROM services");
-$services = fetchAll($result);
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['subscribe'])) {
-    $service_id = filter_input(INPUT_POST, 'service_id', FILTER_VALIDATE_INT);
-    $cardholder_name = filter_input(INPUT_POST, 'input-name', FILTER_SANITIZE_STRING);
-    $card_number = filter_input(INPUT_POST, 'cardNumber', FILTER_SANITIZE_STRING);
-    $expiry_date = filter_input(INPUT_POST, 'expiryDate', FILTER_SANITIZE_STRING);
-    $cvv = filter_input(INPUT_POST, 'cvv', FILTER_SANITIZE_STRING);
-
-    if ($service_id && $cardholder_name && $card_number && $expiry_date && $cvv) {
-        $conn->begin_transaction();
-        try {
-            $stmt = $conn->prepare("INSERT INTO subscriptions (user_id, service_id, start_date, status) VALUES (?, ?, NOW(), 'active')");
-            $stmt->bind_param("ii", $user_id, $service_id);
-            if (!$stmt->execute()) {
-                throw new Exception("Hiba a subscriptions beszúrásakor: " . $stmt->error);
-            }
-            $subscription_id = $conn->insert_id;
-
-            $stmt = $conn->prepare("INSERT INTO payment_details (user_id, subscription_id, cardholder_name, card_number, expiry_date, cvv) VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("iissss", $user_id, $subscription_id, $cardholder_name, $card_number, $expiry_date, $cvv);
-            if (!$stmt->execute()) {
-                throw new Exception("Hiba a payment_details beszúrásakor: " . $stmt->error);
-            }
-
-            $conn->commit();
-            $_SESSION['message'] = 'Sikeresen előfizettél!';
-            $_SESSION['message_type'] = 'success';
-            header('Location: profile.php');
-            exit();
-        } catch (Exception $e) {
-            $conn->rollback();
-            error_log("Hiba az előfizetés során: " . $e->getMessage());
-            $_SESSION['message'] = 'Hiba történt az előfizetés során: ' . $e->getMessage();
-            $_SESSION['message_type'] = 'danger';
-        }
-    } else {
-        $_SESSION['message'] = 'Hiányzó vagy érvénytelen adatok!';
-        $_SESSION['message_type'] = 'danger';
-    }
-}
 ob_end_flush();
 ?>
 
@@ -85,35 +23,34 @@ ob_end_flush();
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <style>
         body {
-            background: linear-gradient(135deg, #f8fafc, #334155);
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
             font-family: 'Poppins', sans-serif;
             min-height: 100vh;
             color: #1e293b;
         }
 
         .service-container {
-            padding: 60px 20px;
-            min-height: 100vh;
-            max-width: 1200px;
+            padding: 80px 20px;
+            max-width: 1300px;
             margin: 0 auto;
         }
 
         .service-title {
-            font-size: 2.5rem;
+            font-size: 3rem;
             font-weight: 700;
-            color: #1e293b;
+            color: #1e40af;
             text-align: center;
-            margin-bottom: 50px;
+            margin-bottom: 60px;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            letter-spacing: 2px;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
 
         .service-card {
             border: none;
-            border-radius: 20px;
+            border-radius: 25px;
             background: #ffffff;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
             overflow: hidden;
             height: 100%;
@@ -122,12 +59,12 @@ ob_end_flush();
         }
 
         .service-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+            transform: translateY(-10px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
         }
 
         .card-body {
-            padding: 30px;
+            padding: 40px;
             flex-grow: 1;
             display: flex;
             flex-direction: column;
@@ -136,44 +73,55 @@ ob_end_flush();
         }
 
         .card-title {
-            font-size: 1.8rem;
+            font-size: 2rem;
             color: #1e40af;
             font-weight: 600;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             text-align: center;
         }
 
         .card-text {
-            font-size: 1rem;
+            font-size: 1.1rem;
             color: #64748b;
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             flex-grow: 1;
         }
 
         .card-subtitle {
-            font-size: 1.3rem;
+            font-size: 1.5rem;
             color: #e11d48;
             font-weight: 700;
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 30px;
         }
 
         .btn-primary {
             border-radius: 50px;
-            padding: 12px 35px;
-            font-size: 1.1rem;
+            padding: 15px 40px;
+            font-size: 1.2rem;
             font-weight: 500;
             background: linear-gradient(90deg, #3b82f6, #1e40af);
             border: none;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
         }
 
         .btn-primary:hover {
             background: linear-gradient(90deg, #1e40af, #3b82f6);
             transform: scale(1.05);
-            box-shadow: 0 6px 18px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 999;
         }
 
         .modal {
@@ -182,112 +130,132 @@ ob_end_flush();
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 100%;
-            max-width: 450px;
+            width: 90%;
+            max-width: 900px;
             background: #ffffff;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-            border-radius: 20px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            border-radius: 30px;
             z-index: 1000;
-            padding: 20px;
+            padding: 40px;
+            animation: slideIn 0.4s ease-out;
         }
 
         .modal.show {
             display: block;
-            animation: fadeIn 0.3s ease-in-out;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translate(-50%, -45%); }
-            to { opacity: 1; transform: translate(-50%, -50%); }
+        .modal-overlay.show {
+            display: block;
         }
 
-        .form {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            padding: 20px;
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -60%);
+            }
+
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
         }
 
-        .credit-card-info--form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
+        .modal-header {
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
         }
 
-        .input_container {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
+        .modal-title {
+            font-size: 2.2rem;
+            color: #1e40af;
+            font-weight: 600;
         }
 
-        .split {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 15px;
+        .modal-body {
+            font-size: 1.2rem;
+            color: #64748b;
+        }
+
+        .modal-footer {
+            border-top: 1px solid #e2e8f0;
+            padding-top: 20px;
+            margin-top: 30px;
+            text-align: right;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
         }
 
         .input_label {
-            font-size: 12px;
+            font-size: 14px;
             color: #64748b;
             font-weight: 600;
             text-transform: uppercase;
+            margin-bottom: 8px;
         }
 
         .input_field {
             width: 100%;
-            height: 45px;
-            padding: 0 15px;
-            border-radius: 12px;
-            outline: none;
-            background-color: #f8fafc;
+            height: 50px;
+            padding: 0 20px;
+            border-radius: 15px;
             border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            font-size: 16px;
             transition: all 0.3s ease;
-            font-size: 14px;
         }
 
         .input_field:focus {
             border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-            background-color: #ffffff;
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.2);
+            background: #ffffff;
+        }
+
+        .payment-options {
+            display: none;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 15px;
+            margin-top: 20px;
         }
 
         .purchase--btn {
-            height: 50px;
+            height: 55px;
             background: linear-gradient(90deg, #3b82f6, #1e40af);
-            border-radius: 12px;
+            border-radius: 15px;
             border: none;
             color: #ffffff;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: 600;
             text-transform: uppercase;
             transition: all 0.3s ease;
+            width: 100%;
         }
 
         .purchase--btn:hover {
             background: linear-gradient(90deg, #1e40af, #3b82f6);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
         }
 
-        .input_field::-webkit-outer-spin-button,
-        .input_field::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-
-        .input_field[type=number] {
-            -moz-appearance: textfield;
+        .alert {
+            margin-top: 20px;
+            border-radius: 15px;
         }
 
         @media (max-width: 768px) {
+            .modal {
+                max-width: 95%;
+                padding: 20px;
+            }
+
             .service-title {
                 font-size: 2rem;
             }
+
             .card-title {
                 font-size: 1.5rem;
-            }
-            .modal {
-                max-width: 90%;
             }
         }
     </style>
@@ -296,103 +264,208 @@ ob_end_flush();
 <body>
     <div class="service-container">
         <h2 class="service-title">Szolgáltatási csomagok</h2>
-        <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-center">
-            <?php foreach ($services as $service): ?>
+        <div class="row row-cols-1 row-cols-md-3 g-4 justify-content-center" id="servicesList"></div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay"></div>
+
+    <div class="modal" id="serviceModal">
+        <div class="modal-header">
+            <h5 class="modal-title" id="modalTitle"></h5>
+            <button class="close-modal" style="background: none; border: none; font-size: 24px; color: #64748b; cursor: pointer;">×</button>
+        </div>
+        <div class="modal-body">
+            <p id="modalDescription"></p>
+            <h6 id="modalPrice" class="card-subtitle"></h6>
+        </div>
+        <div class="modal-footer">
+            <button id="nextBtn" class="btn btn-primary">Tovább a fizetéshez</button>
+        </div>
+    </div>
+
+    <div class="modal" id="paymentModal">
+        <div class="modal-header">
+            <h5 class="modal-title">Fizetési mód kiválasztása</h5>
+            <button class="close-modal" style="background: none; border: none; font-size: 24px; color: #64748b; cursor: pointer;">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label class="input_label">Fizetési mód</label>
+                <div>
+                    <label><input type="radio" name="paymentMethod" value="local"> Helybeli fizetés</label>
+                    <label style="margin-left: 20px;"><input type="radio" name="paymentMethod" value="bank_transfer"> Banki átutalás</label>
+                </div>
+            </div>
+            <form id="localPaymentForm" class="payment-options">
+                <div class="form-group">
+                    <label class="input_label">Név</label>
+                    <input class="input_field" type="text" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label class="input_label">Email</label>
+                    <input class="input_field" type="email" name="email" required>
+                </div>
+                <button type="submit" class="purchase--btn">Fizetés végrehajtása</button>
+            </form>
+            <form id="bankPaymentForm" class="payment-options">
+                <div class="form-group">
+                    <label class="input_label">Bankszámlaszám</label>
+                    <input class="input_field" type="text" name="bank_account" placeholder="Pl. HU12345678901234" required>
+                </div>
+                <div class="form-group">
+                    <label class="input_label">Megjegyzés</label>
+                    <input class="input_field" type="text" name="description" placeholder="Pl. Előfizetés azonosító" required>
+                </div>
+                <button type="submit" class="purchase--btn">Fizetés végrehajtása</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="messageContainer" class="service-container"></div>
+
+    <script>
+        $(document).ready(function() {
+            loadServices();
+
+            function loadServices() {
+                $.getJSON('../api/services.php', function(services) {
+                    let html = '';
+                    services.forEach(service => {
+                        html += `
                 <div class="col">
                     <div class="service-card h-100">
                         <div class="card-body text-center">
-                            <h5 class="card-title"><?php echo htmlspecialchars($service["service_name"]); ?></h5>
-                            <p class="card-text"><?php echo nl2br(htmlspecialchars($service["service_description"])); ?></p>
-                            <h6 class="card-subtitle"><?php echo number_format($service["service_price"], 0, ',', ' '); ?> Ft/hó</h6>
-                            <button class="btn btn-primary mt-3 w-100 open-payment-modal"
-                                data-id="<?php echo $service["service_id"]; ?>"
-                                data-name="<?php echo htmlspecialchars($service["service_name"]); ?>"
-                                data-price="<?php echo $service["service_price"]; ?>">
+                            <h5 class="card-title">${service.service_name}</h5>
+                            <p class="card-text">${service.service_description.replace(/\n/g, '<br>')}</p>
+                            <h6 class="card-subtitle">${Number(service.service_price).toLocaleString('hu-HU')} Ft/hó</h6>
+                            <button class="btn btn-primary mt-3 w-100 open-service-modal"
+                                data-id="${service.id}"
+                                data-name="${service.service_name}"
+                                data-description="${service.service_description}"
+                                data-price="${service.service_price}">
                                 Feliratkozás
                             </button>
                         </div>
                     </div>
                 </div>
-            <?php endforeach; ?>
-        </div>
-    </div>
-
-    <div class="modal" id="paymentModal">
-        <form class="form" id="paymentForm" method="POST" action="">
-            <button type="button" class="close-modal" style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 20px; color: #64748b; cursor: pointer;">×</button>
-            <input type="hidden" name="service_id" id="serviceId">
-            <div class="credit-card-info--form">
-                <div class="input_container">
-                    <label for="name" class="input_label">Kártyatulajdonos neve</label>
-                    <input id="name" class="input_field" type="text" name="input-name" placeholder="Teljes név megadása" required>
-                </div>
-                <div class="input_container">
-                    <label for="cardNumber" class="input_label">Kártyaszám</label>
-                    <input id="cardNumber" class="input_field" type="number" name="cardNumber" placeholder="1234 5678 9123 4567" required>
-                </div>
-                <div class="input_container">
-                    <label for="expiryDate" class="input_label">Lejárati dátum / CVV</label>
-                    <div class="split">
-                        <input id="expiryDate" class="input_field" type="text" name="expiryDate" placeholder="MM/YY" required>
-                        <input id="cvv" class="input_field" type="number" name="cvv" placeholder="123" required>
-                    </div>
-                </div>
-            </div>
-            <button type="submit" name="subscribe" class="purchase--btn">Fizetés</button>
-        </form>
-    </div>
-
-    <script>
-        $(document).ready(function() {
-            $(document).on("click", ".open-payment-modal", function() {
-                let serviceId = $(this).data("id");
-                $("#serviceId").val(serviceId);
-                $("#paymentModal").addClass("show");
+            `;
+                    });
+                    $('#servicesList').html(html);
+                }).fail(function(xhr, status, error) {
+                    showMessage('Hiba történt a szolgáltatások betöltésekor: ' + error, 'danger');
+                });
+            }
+            $(document).on('click', '.open-service-modal', function() {
+                const id = $(this).data('id');
+                const name = $(this).data('name');
+                const description = $(this).data('description');
+                const price = $(this).data('price');
+                $('#modalTitle').text(name);
+                $('#modalDescription').html(description.replace(/\n/g, '<br>'));
+                $('#modalPrice').text(`${Number(price).toLocaleString('hu-HU')} Ft/hó`);
+                $('#serviceModal').addClass('show');
+                $('#modalOverlay').addClass('show');
+                $('#serviceModal').data('service_id', id);
+                $('#serviceModal').data('price', price);
             });
 
-            $(document).on("click", ".close-modal", function() {
-                $("#paymentModal").removeClass("show");
+            $('#nextBtn').on('click', function() {
+                $('#serviceModal').removeClass('show');
+                $('#paymentModal').addClass('show');
             });
 
-            $(document).on("click", function(e) {
-                if ($(e.target).is("#paymentModal") && !$(e.target).closest(".form").length) {
-                    $("#paymentModal").removeClass("show");
+            $(document).on('click', '.close-modal', function() {
+                $(this).closest('.modal').removeClass('show');
+                $('#modalOverlay').removeClass('show');
+                $('.payment-options').hide();
+                $('input[name="paymentMethod"]').prop('checked', false);
+            });
+
+            $(document).on('click', '#modalOverlay', function() {
+                $('.modal').removeClass('show');
+                $('#modalOverlay').removeClass('show');
+                $('.payment-options').hide();
+                $('input[name="paymentMethod"]').prop('checked', false);
+            });
+
+            $('input[name="paymentMethod"]').on('change', function() {
+                $('.payment-options').hide();
+                if (this.value === 'local') {
+                    $('#localPaymentForm').show();
+                } else if (this.value === 'bank_transfer') {
+                    $('#bankPaymentForm').show();
                 }
             });
 
-            $("#paymentForm").on("submit", function(e) {
-                let cardNumber = $("#cardNumber").val();
-                if (!/^\d{16}$/.test(cardNumber)) {
-                    alert("A kártyaszámnak pontosan 16 számjegyből kell állnia!");
-                    return false;
+            $('#localPaymentForm').on('submit', function(e) {
+                e.preventDefault();
+                const name = $(this).find('[name="name"]').val();
+                const email = $(this).find('[name="email"]').val();
+                if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    showMessage('Érvénytelen név vagy email!', 'danger');
+                    return;
                 }
-
-                let expiryDate = $("#expiryDate").val();
-                if (!/^\d{2}\/\d{2}$/.test(expiryDate)) {
-                    alert("A lejárati dátum formátuma nem megfelelő! Használd a MM/YY formátumot.");
-                    return false;
-                }
-
-                let [month, year] = expiryDate.split('/');
-                let currentDate = new Date();
-                let currentYear = currentDate.getFullYear() % 100;
-                let currentMonth = currentDate.getMonth() + 1;
-                if (year < currentYear || (year == currentYear && month < currentMonth)) {
-                    alert("A megadott lejárati dátum múltbeli dátum!");
-                    return false;
-                }
-
-                let cvv = $("#cvv").val();
-                if (!/^\d{3}$/.test(cvv)) {
-                    alert("A CVV kódnak pontosan 3 számjegyből kell állnia!");
-                    return false;
-                }
-
-                return true;
+                submitPayment({
+                    payment_method: 'local',
+                    name: name,
+                    email: email,
+                    price: $('#serviceModal').data('price'),
+                    service_id: $('#serviceModal').data('service_id')
+                });
             });
+
+            $('#bankPaymentForm').on('submit', function(e) {
+                e.preventDefault();
+                const bank_account = $(this).find('[name="bank_account"]').val();
+                const description = $(this).find('[name="description"]').val();
+                if (!bank_account || !description) {
+                    showMessage('Bankszámlaszám és megjegyzés szükséges!', 'danger');
+                    return;
+                }
+                if (!/^[A-Z]{2}\d{14,}$/.test(bank_account)) {
+                    showMessage('Érvénytelen bankszámlaszám formátum! Pl. HU12345678901234', 'danger');
+                    return;
+                }
+                submitPayment({
+                    payment_method: 'bank_transfer',
+                    bank_account: bank_account,
+                    description: description,
+                    price: $('#serviceModal').data('price'),
+                    service_id: $('#serviceModal').data('service_id')
+                });
+            });
+
+            function submitPayment(data) {
+                console.log('Küldött adat:', data); // Debug naplózás
+                $.ajax({
+                    url: '../api/services.php',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function(response) {
+                        console.log('Szerver válasza:', response); // Debug naplózás
+                        if (response.error) {
+                            showMessage(response.error, 'danger');
+                        } else {
+                            showMessage(response.message, 'success');
+                            setTimeout(() => window.location.href = response.redirect, 1000);
+                        }
+                    },
+                    error: function(xhr) {
+                        console.log('AJAX hiba:', xhr.responseText); // Debug naplózás
+                        showMessage('Hiba történt: ' + xhr.status + ' - ' + xhr.statusText, 'danger');
+                    }
+                });
+            }
+
+            function showMessage(message, type) {
+                $('#messageContainer').html(`<div class="alert alert-${type}">${message}</div>`);
+                setTimeout(() => $('#messageContainer').empty(), 3000);
+            }
         });
     </script>
 </body>
 
 </html>
+
 <?php require_once '../includes/footer.php'; ?>

@@ -381,18 +381,18 @@ ob_end_flush();
 
         // Fizetési adatok szerkesztése
         $(document).on("click", ".edit-payment-btn", function() {
-            const subscriptionId = $(this).data("subscription-id");
+            const subscriptionId = $(this).data("subscription_id");
             $(`#payment-form-${subscriptionId}`).addClass("active");
         });
 
         $(document).on("click", ".cancel-edit-btn", function() {
-            const subscriptionId = $(this).data("subscription-id");
+            const subscriptionId = $(this).data("subscription_id");
             $(`#payment-form-${subscriptionId}`).removeClass("active");
         });
 
         $(document).on("submit", ".payment-details-form-inner", function(e) {
             e.preventDefault();
-            const subscriptionId = $(this).data("subscription-id");
+            const subscriptionId = $(this).data("subscription_id");
             const data = {
                 update_payment: true,
                 subscription_id: subscriptionId,
@@ -471,6 +471,19 @@ ob_end_flush();
                 }, false);
             });
         })();
+        function escapeHtml(text) {
+            const map = {
+                '&': '&',
+                '<': '<',
+                '>': '>',
+                '"': '"',
+                "'": "'"
+            };
+            return text.replace(/[&<>"']/g, function(m) {
+                return map[m];
+            });
+        }
+
     </script>
 
     <?php require_once '../includes/footer.php'; ?>

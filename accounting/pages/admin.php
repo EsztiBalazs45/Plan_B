@@ -303,17 +303,14 @@ require_once '../includes/header.php';
 
     .fc-timegrid-slot {
         height: 2.5rem !important;
-        /* Nagyobb slot-magasság a heti nézetben */
     }
 
     .fc-daygrid-day {
         height: 150px !important;
-        /* Nagyobb napi cellák a havi nézetben */
     }
 
     .fc-timegrid-event {
         min-height: 2.5rem !important;
-        /* Minimum magasság az eseményeknek */
     }
 
     @media (max-width: 768px) {

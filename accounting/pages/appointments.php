@@ -16,180 +16,7 @@ $stmt = $conn->prepare("SELECT id, CompanyName FROM clients WHERE user_id = ? OR
 $stmt->execute([$user_id]);
 $clients = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Szabad időpontok keresése egy adott napra
-function getAvailableSlots($conn, $date)
-{
-    $start_hour = 7; // 07:00
-    $end_hour = 16; // 16:00
-    $interval = 30; // 30 perces intervallumok
-    $slots = [];
-    $date_start = new DateTime("$date $start_hour:00");
-    $date_end = new DateTime("$date $end_hour:00");
-
-    $stmt = $conn->prepare("
-        SELECT start, end 
-        FROM appointments 
-        WHERE DATE(start) = ? AND status != 'canceled'
-    ");
-    $stmt->execute([$date]);
-    $booked_slots = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    while ($date_start <= $date_end) {
-        $slot_start = $date_start->format('Y-m-d H:i:s');
-        $date_start->modify("+{$interval} minutes");
-        $slot_end = $date_start->format('Y-m-d H:i:s');
-        $is_booked = false;
-
-        foreach ($booked_slots as $booked) {
-            if (($slot_start < $booked['end'] && $slot_end > $booked['start'])) {
-                $is_booked = true;
-                break;
-            }
-        }
-
-        if (!$is_booked) {
-            $slots[] = ['start' => $slot_start, 'end' => $slot_end];
-        }
-    }
-    return $slots;
-}
-
-// Időpontok kezelése
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['add_appointment']) || isset($_POST['edit_appointment'])) {
-        $title = $_POST['title'] ?? '';
-        $start_date = $_POST['start_date'] ?? '';
-        $start_time = $_POST['start_time'] ?? '';
-        $end_date = $_POST['end_date'] ?? '';
-        $end_time = $_POST['end_time'] ?? '';
-        $client_id = $_POST['client_id'] ?? '';
-        $description = $_POST['description'] ?? '';
-        $status = $_POST['status'] ?? 'pending';
-
-        $start = date('Y-m-d H:i:s', strtotime("$start_date $start_time"));
-        $end = date('Y-m-d H:i:s', strtotime("$end_date $end_time"));
-        $now = date('Y-m-d H:i:s');
-
-        if ($start < $now) {
-            $_SESSION['error'] = 'Nem foglalhatsz múltbeli időpontot!';
-            header('Location: appointments.php');
-            exit();
-        }
-
-        $stmt = $conn->prepare("
-            SELECT COUNT(*) 
-            FROM appointments 
-            WHERE status != 'canceled'
-            AND id != ?
-            AND (
-                (start <= ? AND end > ?) OR 
-                (start < ? AND end >= ?) OR 
-                (start >= ? AND end <= ?)
-            )
-        ");
-        $appointment_id = isset($_POST['appointment_id']) ? $_POST['appointment_id'] : 0;
-        $stmt->execute([$appointment_id, $start, $start, $end, $end, $start, $end]);
-        $conflict_count = $stmt->fetchColumn();
-
-        if ($conflict_count > 0) {
-            $_SESSION['conflict'] = [
-                'title' => $title,
-                'start_date' => $start_date,
-                'start_time' => $start_time,
-                'end_date' => $end_date,
-                'end_time' => $end_time,
-                'client_id' => $client_id,
-                'description' => $description,
-                'available_slots' => getAvailableSlots($conn, $start_date)
-            ];
-            header('Location: appointments.php?action=new');
-            exit();
-        }
-
-        try {
-            if (isset($_POST['add_appointment'])) {
-                $status = 'pending'; // Csak pending lehet új időpont
-                $stmt = $conn->prepare("
-                    INSERT INTO appointments (user_id, client_id, title, start, end, description, status)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                ");
-                $stmt->execute([$user_id, $client_id, $title, $start, $end, $description, $status]);
-                $_SESSION['message'] = 'Időpont sikeresen létrehozva!';
-            } else {
-                $appointment_id = $_POST['appointment_id'];
-                $stmt = $conn->prepare("SELECT status FROM appointments WHERE id = ? AND user_id = ?");
-                $stmt->execute([$appointment_id, $user_id]);
-                $current_status = $stmt->fetchColumn();
-
-                if ($current_status === 'confirmed' && $status !== 'canceled') {
-                    $_SESSION['error'] = 'Megerősített időpontot csak lemondani lehet!';
-                    header('Location: appointments.php?action=edit&id=' . $appointment_id);
-                    exit();
-                }
-
-                if ($status === 'canceled') {
-                    // Ha canceled, töröljük az időpontot az adatbázisból
-                    $stmt = $conn->prepare("DELETE FROM appointments WHERE id = ? AND user_id = ?");
-                    $stmt->execute([$appointment_id, $user_id]);
-                    $_SESSION['message'] = 'Időpont sikeresen lemondva és törölve!';
-                } else {
-                    $stmt = $conn->prepare("
-                        UPDATE appointments
-                        SET title = ?, client_id = ?, start = ?, end = ?, description = ?, status = ?
-                        WHERE id = ? AND user_id = ?
-                    ");
-                    $stmt->execute([$title, $client_id, $start, $end, $description, $status, $appointment_id, $user_id]);
-                    $_SESSION['message'] = 'Időpont sikeresen frissítve!';
-                }
-            }
-            $_SESSION['message_type'] = 'success';
-            header('Location: appointments.php');
-            exit();
-        } catch (PDOException $e) {
-            $_SESSION['error'] = 'Adatbázis hiba: ' . $e->getMessage();
-            header('Location: appointments.php');
-            exit();
-        }
-    }
-
-    if (isset($_POST['delete_appointment'])) {
-        $appointment_id = $_POST['appointment_id'];
-        $stmt = $conn->prepare("DELETE FROM appointments WHERE id = ? AND user_id = ?");
-        $stmt->execute([$appointment_id, $user_id]);
-        $_SESSION['message'] = 'Időpont sikeresen törölve!';
-        $_SESSION['message_type'] = 'success';
-        header('Location: appointments.php');
-        exit();
-    }
-
-    // Új időpont foglalása ütközés esetén
-    if (isset($_POST['book_new_slot'])) {
-        $title = $_SESSION['conflict']['title'];
-        $start_date = $_POST['new_start_date'];
-        $start_time = $_POST['new_start_time'];
-        $end_date = $_POST['new_end_date'];
-        $end_time = $_POST['new_end_time'];
-        $client_id = $_SESSION['conflict']['client_id'];
-        $description = $_SESSION['conflict']['description'];
-        $status = 'pending';
-
-        $start = date('Y-m-d H:i:s', strtotime("$start_date $start_time"));
-        $end = date('Y-m-d H:i:s', strtotime("$end_date $end_time"));
-
-        $stmt = $conn->prepare("
-            INSERT INTO appointments (user_id, client_id, title, start, end, description, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        ");
-        $stmt->execute([$user_id, $client_id, $title, $start, $end, $description, $status]);
-        unset($_SESSION['conflict']);
-        $_SESSION['message'] = 'Időpont sikeresen lefoglalva az új időpontra!';
-        $_SESSION['message_type'] = 'success';
-        header('Location: appointments.php');
-        exit();
-    }
-}
-
-// Szerkesztéshez adatlekérés
+// Szerkesztéshez adatlekérés (ha szükséges az oldal betöltésekor)
 $edit_appointment = null;
 if ($action === 'edit' && isset($_GET['id'])) {
     $stmt = $conn->prepare("SELECT * FROM appointments WHERE id = ? AND user_id = ?");
@@ -197,19 +24,6 @@ if ($action === 'edit' && isset($_GET['id'])) {
     $edit_appointment = $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-// Összes időpont lekérdezése (csak pending és confirmed jelenik meg)
-$appointments = [];
-if ($action === 'list') {
-    $stmt = $conn->prepare("
-        SELECT a.*, c.CompanyName 
-        FROM appointments a 
-        LEFT JOIN clients c ON a.client_id = c.id 
-        WHERE a.user_id = ? AND a.status != 'canceled'
-        ORDER BY a.start DESC
-    ");
-    $stmt->execute([$user_id]);
-    $appointments = $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
 ob_end_flush();
 ?>
 
@@ -223,9 +37,6 @@ ob_end_flush();
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <style>
-        /* A meglévő CSS változatlan */
-    </style>
 </head>
 
 <body>
@@ -236,7 +47,7 @@ ob_end_flush();
                     <h5><?php echo $action === 'new' ? 'Új időpont' : 'Időpont szerkesztése'; ?></h5>
                 </div>
                 <div class="card-body">
-                    <form method="POST" class="needs-validation" novalidate>
+                    <form id="appointmentForm" class="needs-validation" novalidate>
                         <input type="hidden" name="appointment_id" value="<?php echo $edit_appointment['id'] ?? ''; ?>">
                         <div class="mb-3">
                             <label for="title" class="form-label">Cím</label>
@@ -289,7 +100,7 @@ ob_end_flush();
                                 <?php endif; ?>
                             </select>
                         </div>
-                        <button type="submit" name="<?php echo $action === 'new' ? 'add_appointment' : 'edit_appointment'; ?>" class="btn btn-primary">Mentés</button>
+                        <button type="submit" class="btn btn-primary">Mentés</button>
                         <a href="appointments.php" class="btn btn-secondary">Vissza</a>
                     </form>
                 </div>
@@ -301,151 +112,201 @@ ob_end_flush();
                     <a href="?action=new" class="btn btn-primary">Új időpont</a>
                 </div>
                 <div class="card-body">
-                    <?php if (empty($appointments)): ?>
-                        <p class="text-muted">Még nincsenek időpontok.</p>
-                    <?php else: ?>
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Kezdés</th>
-                                        <th>Befejezés</th>
-                                        <th>Cím</th>
-                                        <th>Ügyfél</th>
-                                        <th>Leírás</th>
-                                        <th>Státusz</th>
-                                        <th>Műveletek</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($appointments as $appointment): ?>
-                                        <tr>
-                                            <td><?php echo date('Y.m.d H:i', strtotime($appointment['start'])); ?></td>
-                                            <td><?php echo date('Y.m.d H:i', strtotime($appointment['end'])); ?></td>
-                                            <td><?php echo htmlspecialchars($appointment['title']); ?></td>
-                                            <td><?php echo htmlspecialchars($appointment['CompanyName'] ?? ''); ?></td>
-                                            <td><?php echo htmlspecialchars($appointment['description'] ?? ''); ?></td>
-                                            <td class="status-<?php echo $appointment['status']; ?>">
-                                                <?php
-                                                $statusLabels = ['pending' => 'Függőben', 'confirmed' => 'Megerősítve'];
-                                                echo $statusLabels[$appointment['status']] ?? ucfirst($appointment['status']);
-                                                ?>
-                                            </td>
-                                            <td>
-                                                <a href="?action=edit&id=<?php echo $appointment['id']; ?>" class="btn btn-sm btn-primary">Szerkesztés</a>
-                                                <form method="POST" style="display:inline;" onsubmit="return confirm('Biztosan törlöd ezt az időpontot?');">
-                                                    <input type="hidden" name="appointment_id" value="<?php echo $appointment['id']; ?>">
-                                                    <button type="submit" name="delete_appointment" class="btn btn-sm btn-danger">Törlés</button>
-                                                </form>
-                                            </td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    <?php endif; ?>
+                    <div id="appointmentsTable"></div>
                 </div>
             </div>
         <?php endif; ?>
 
-        <?php if (isset($_SESSION['message'])): ?>
-            <div class="alert alert-<?php echo $_SESSION['message_type'] ?? 'info'; ?>">
-                <?php echo $_SESSION['message']; ?>
-            </div>
-            <?php unset($_SESSION['message'], $_SESSION['message_type']); ?>
-        <?php endif; ?>
-        <?php if (isset($_SESSION['error'])): ?>
-            <div class="alert alert-danger">
-                <?php echo $_SESSION['error']; ?>
-            </div>
-            <?php unset($_SESSION['error']); ?>
-        <?php endif; ?>
+        <div id="messageContainer"></div>
 
         <!-- Ütközés esetén modal -->
-        <?php if (isset($_SESSION['conflict'])): ?>
-            <div class="modal fade" id="conflictModal" tabindex="-1" aria-labelledby="conflictModalLabel" aria-hidden="true">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="conflictModalLabel">Időpont ütközés</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <p>A kiválasztott időpont (<strong><?php echo date('Y.m.d H:i', strtotime($_SESSION['conflict']['start_date'] . ' ' . $_SESSION['conflict']['start_time'])); ?> - <?php echo date('H:i', strtotime($_SESSION['conflict']['end_date'] . ' ' . $_SESSION['conflict']['end_time'])); ?></strong>) már foglalt!</p>
-                            <h6>Szabad időpontok az adott napon:</h6>
-                            <?php if (!empty($_SESSION['conflict']['available_slots'])): ?>
-                                <form method="POST">
-                                    <ul class="list-group">
-                                        <?php foreach ($_SESSION['conflict']['available_slots'] as $slot): ?>
-                                            <li class="list-group-item">
-                                                <?php echo date('H:i', strtotime($slot['start'])) . ' - ' . date('H:i', strtotime($slot['end'])); ?>
-                                                <button type="submit" name="book_new_slot" class="btn btn-sm btn-primary float-end" onclick="selectSlotAndSubmit('<?php echo date('Y-m-d', strtotime($slot['start'])); ?>', '<?php echo date('H:i', strtotime($slot['start'])); ?>', '<?php echo date('Y-m-d', strtotime($slot['end'])); ?>', '<?php echo date('H:i', strtotime($slot['end'])); ?>')">Foglalás</button>
-                                            </li>
-                                        <?php endforeach; ?>
-                                    </ul>
-                                    <input type="hidden" name="new_start_date" id="new_start_date">
-                                    <input type="hidden" name="new_start_time" id="new_start_time">
-                                    <input type="hidden" name="new_end_date" id="new_end_date">
-                                    <input type="hidden" name="new_end_time" id="new_end_time">
-                                </form>
-                            <?php else: ?>
-                                <p>Nincsenek szabad időpontok ezen a napon.</p>
-                            <?php endif; ?>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bezárás</button>
-                        </div>
+        <div class="modal fade" id="conflictModal" tabindex="-1" aria-labelledby="conflictModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="conflictModalLabel">Időpont ütközés</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="conflictModalBody"></div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bezárás</button>
                     </div>
                 </div>
             </div>
-        <?php endif; ?>
+        </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const startDateInput = document.getElementById('start_date');
-            const endDateInput = document.getElementById('end_date');
-            const statusSelect = document.getElementById('status');
-            const forms = document.querySelectorAll('.needs-validation');
+            const appointmentForm = document.getElementById('appointmentForm');
+            const appointmentsTable = document.getElementById('appointmentsTable');
+            const messageContainer = document.getElementById('messageContainer');
 
-            startDateInput.addEventListener('change', function() {
-                endDateInput.value = this.value;
-            });
+            if (appointmentsTable) {
+                loadAppointments();
+            }
 
-            // Lemondás megerősítése
-            if (statusSelect) {
-                statusSelect.addEventListener('change', function() {
-                    if (this.value === 'canceled') {
-                        if (!confirm('Biztosan le szeretnéd mondani és törölni ezt az időpontot? Ez véglegesen eltávolítja az adatbázisból!')) {
-                            this.value = '<?php echo $edit_appointment['status'] ?? 'pending'; ?>';
-                        }
+            if (appointmentForm) {
+                appointmentForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    if (!this.checkValidity()) {
+                        this.classList.add('was-validated');
+                        return;
                     }
+
+                    const formData = new FormData(this);
+                    const data = {
+                        id: formData.get('appointment_id'),
+                        title: formData.get('title'),
+                        start: `${formData.get('start_date')} ${formData.get('start_time')}:00`,
+                        end: `${formData.get('end_date')} ${formData.get('end_time')}:00`,
+                        client_id: formData.get('client_id'),
+                        description: formData.get('description'),
+                        status: formData.get('status')
+                    };
+
+                    const method = data.id ? 'PUT' : 'POST';
+                    fetch('../api/appointments.php', {
+                            method: method,
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        })
+                        .then(response => response.json())
+                        .then(result => {
+                            if (result.error) {
+                                if (result.error === 'Időpont ütközés!') {
+                                    showConflictModal(data, result.available_slots);
+                                } else {
+                                    showMessage(result.error, 'danger');
+                                }
+                            } else {
+                                showMessage(result.message, 'success');
+                                setTimeout(() => window.location.href = 'appointments.php', 1000);
+                            }
+                        })
+                        .catch(error => showMessage('Hiba történt: ' + error, 'danger'));
                 });
             }
 
-            Array.from(forms).forEach(form => {
-                form.addEventListener('submit', event => {
-                    if (!form.checkValidity()) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-                    form.classList.add('was-validated');
-                }, false);
-            });
+            function loadAppointments() {
+                fetch('../api/appointments.php')
+                    .then(response => response.json())
+                    .then(appointments => {
+                        if (appointments.length === 0) {
+                            appointmentsTable.innerHTML = '<p class="text-muted">Még nincsenek időpontok.</p>';
+                            return;
+                        }
 
-            <?php if (isset($_SESSION['conflict'])): ?>
+                        let html = `
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Kezdés</th>
+                                            <th>Befejezés</th>
+                                            <th>Cím</th>
+                                            <th>Ügyfél</th>
+                                            <th>Leírás</th>
+                                            <th>Státusz</th>
+                                            <th>Műveletek</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                        `;
+                        appointments.forEach(appointment => {
+                            html += `
+                                <tr>
+                                    <td>${new Date(appointment.start).toLocaleString('hu-HU', { dateStyle: 'short', timeStyle: 'short' })}</td>
+                                    <td>${new Date(appointment.end).toLocaleString('hu-HU', { dateStyle: 'short', timeStyle: 'short' })}</td>
+                                    <td>${appointment.title}</td>
+                                    <td>${appointment.CompanyName || ''}</td>
+                                    <td>${appointment.description || ''}</td>
+                                    <td class="status-${appointment.status}">${appointment.status === 'pending' ? 'Függőben' : 'Megerősítve'}</td>
+                                    <td>
+                                        <a href="?action=edit&id=${appointment.id}" class="btn btn-sm btn-primary">Szerkesztés</a>
+                                        <button class="btn btn-sm btn-danger" onclick="deleteAppointment(${appointment.id})">Törlés</button>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                        html += '</tbody></table></div>';
+                        appointmentsTable.innerHTML = html;
+                    });
+            }
+
+            window.deleteAppointment = function(id) {
+                if (!confirm('Biztosan törlöd ezt az időpontot?')) return;
+
+                fetch('api.php', {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            id
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        showMessage(result.message, 'success');
+                        loadAppointments();
+                    })
+                    .catch(error => showMessage('Hiba történt: ' + error, 'danger'));
+            };
+
+            function showMessage(message, type) {
+                messageContainer.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+                setTimeout(() => messageContainer.innerHTML = '', 3000);
+            }
+
+            function showConflictModal(data, slots) {
+                const modalBody = document.getElementById('conflictModalBody');
+                let html = `
+                    <p>A kiválasztott időpont (<strong>${data.start} - ${data.end}</strong>) már foglalt!</p>
+                    <h6>Szabad időpontok az adott napon:</h6>
+                `;
+                if (slots.length > 0) {
+                    html += '<ul class="list-group">';
+                    slots.forEach(slot => {
+                        html += `
+                            <li class="list-group-item">
+                                ${new Date(slot.start).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' })} - 
+                                ${new Date(slot.end).toLocaleTimeString('hu-HU', { hour: '2-digit', minute: '2-digit' })}
+                                <button class="btn btn-sm btn-primary float-end" onclick="bookNewSlot('${slot.start}', '${slot.end}')">Foglalás</button>
+                            </li>
+                        `;
+                    });
+                    html += '</ul>';
+                } else {
+                    html += '<p>Nincsenek szabad időpontok ezen a napon.</p>';
+                }
+                modalBody.innerHTML = html;
                 const conflictModal = new bootstrap.Modal(document.getElementById('conflictModal'));
                 conflictModal.show();
-            <?php endif; ?>
-        });
 
-        function selectSlotAndSubmit(startDate, startTime, endDate, endTime) {
-            document.getElementById('new_start_date').value = startDate;
-            document.getElementById('new_start_time').value = startTime;
-            document.getElementById('new_end_date').value = endDate;
-            document.getElementById('new_end_time').value = endTime;
-        }
+                window.bookNewSlot = function(start, end) {
+                    data.start = start;
+                    data.end = end;
+                    fetch('api.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        })
+                        .then(response => response.json())
+                        .then(result => {
+                            showMessage(result.message, 'success');
+                            conflictModal.hide();
+                            setTimeout(() => window.location.href = 'appointments.php', 1000);
+                        });
+                };
+            }
+        });
     </script>
+
     <style>
         body {
             background: linear-gradient(135deg, #f9fafb, #334155);
@@ -608,6 +469,7 @@ ob_end_flush();
             }
         }
     </style>
+
 
     <?php require_once '../includes/footer.php'; ?>
 </body>

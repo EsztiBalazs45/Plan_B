@@ -30,16 +30,18 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
     case 'GET':
-        // Felhasználói adatok és előfizetések lekérdezése
+        // Felhasználói adatok lekérdezése
         $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
         $user = $stmt->get_result()->fetch_assoc();
 
+        // Előfizetések lekérdezése
         $stmt = $conn->prepare("
-            SELECT s.*, srv.service_name, pd.cardholder_name, pd.card_number, pd.expiry_date, pd.cvv
+            SELECT s.*, srv.service_name, 
+                   pd.payment_method, pd.name, pd.email, pd.bank_account, pd.description, pd.price
             FROM subscriptions s
-            JOIN services srv ON s.service_id = srv.service_id
+            JOIN services srv ON s.service_id = srv.id
             LEFT JOIN payment_details pd ON s.id = pd.subscription_id AND s.user_id = pd.user_id
             WHERE s.user_id = ? AND s.status = 'active'
         ");
@@ -55,8 +57,8 @@ switch ($method) {
         echo json_encode(['user' => $user, 'subscriptions' => $subscriptions]);
         break;
 
+    // A PUT, DELETE és POST részek változatlanok maradnak
     case 'PUT':
-        // Profil frissítése
         $data = json_decode(file_get_contents("php://input"), true);
         $name = htmlspecialchars($data['name']);
         $email = htmlspecialchars($data['email']);
@@ -66,7 +68,7 @@ switch ($method) {
         $stmt->bind_param("si", $email, $user_id);
         $stmt->execute();
         if ($stmt->get_result()->num_rows > 0) {
-            http_response_code(409); // Conflict
+            http_response_code(409);
             echo json_encode(['error' => 'Ez az email cím már foglalt!']);
             exit;
         }
@@ -93,7 +95,6 @@ switch ($method) {
         break;
 
     case 'DELETE':
-        // Előfizetés törlése
         $data = json_decode(file_get_contents("php://input"), true);
         $subscription_id = (int)$data['subscription_id'];
 
@@ -119,7 +120,6 @@ switch ($method) {
         break;
 
     case 'POST':
-        // Fizetési adatok frissítése vagy jelszó módosítása
         $data = json_decode(file_get_contents("php://input"), true);
         if (isset($data['update_payment'])) {
             $subscription_id = (int)$data['subscription_id'];
@@ -169,7 +169,7 @@ switch ($method) {
         break;
 
     default:
-        http_response_code(405); // Method Not Allowed
+        http_response_code(405);
         echo json_encode(['error' => 'Nem támogatott HTTP metódus']);
         break;
 }

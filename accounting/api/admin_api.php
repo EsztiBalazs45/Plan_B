@@ -62,7 +62,7 @@ switch ($method) {
                                            FROM subscriptions s 
                                            LEFT JOIN clients c ON s.user_id = c.user_id 
                                            LEFT JOIN users u ON c.user_id = u.id 
-                                           LEFT JOIN services serv ON s.service_id = serv.service_id 
+                                           LEFT JOIN services serv ON s.service_id = serv.id 
                                            ORDER BY s.start_date DESC")
                                  ->fetchAll(PDO::FETCH_ASSOC);
             echo json_encode($subscriptions);
