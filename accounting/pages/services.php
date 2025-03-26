@@ -10,7 +10,6 @@ if (!isLoggedIn()) {
 $user_id = $_SESSION['user_id'];
 ob_end_flush();
 ?>
-
 <!DOCTYPE html>
 <html lang="hu">
 
@@ -279,45 +278,7 @@ ob_end_flush();
             <h6 id="modalPrice" class="card-subtitle"></h6>
         </div>
         <div class="modal-footer">
-            <button id="nextBtn" class="btn btn-primary">Tovább a fizetéshez</button>
-        </div>
-    </div>
-
-    <div class="modal" id="paymentModal">
-        <div class="modal-header">
-            <h5 class="modal-title">Fizetési mód kiválasztása</h5>
-            <button class="close-modal" style="background: none; border: none; font-size: 24px; color: #64748b; cursor: pointer;">×</button>
-        </div>
-        <div class="modal-body">
-            <div class="form-group">
-                <label class="input_label">Fizetési mód</label>
-                <div>
-                    <label><input type="radio" name="paymentMethod" value="local"> Helybeli fizetés</label>
-                    <label style="margin-left: 20px;"><input type="radio" name="paymentMethod" value="bank_transfer"> Banki átutalás</label>
-                </div>
-            </div>
-            <form id="localPaymentForm" class="payment-options">
-                <div class="form-group">
-                    <label class="input_label">Név</label>
-                    <input class="input_field" type="text" name="name" required>
-                </div>
-                <div class="form-group">
-                    <label class="input_label">Email</label>
-                    <input class="input_field" type="email" name="email" required>
-                </div>
-                <button type="submit" class="purchase--btn">Fizetés végrehajtása</button>
-            </form>
-            <form id="bankPaymentForm" class="payment-options">
-                <div class="form-group">
-                    <label class="input_label">Bankszámlaszám</label>
-                    <input class="input_field" type="text" name="bank_account" placeholder="Pl. HU12345678901234" required>
-                </div>
-                <div class="form-group">
-                    <label class="input_label">Megjegyzés</label>
-                    <input class="input_field" type="text" name="description" placeholder="Pl. Előfizetés azonosító" required>
-                </div>
-                <button type="submit" class="purchase--btn">Fizetés végrehajtása</button>
-            </form>
+            <button id="nextBtn" class="btn btn-primary">Fizetés Stripe-on keresztül</button>
         </div>
     </div>
 
@@ -332,29 +293,30 @@ ob_end_flush();
                     let html = '';
                     services.forEach(service => {
                         html += `
-                <div class="col">
-                    <div class="service-card h-100">
-                        <div class="card-body text-center">
-                            <h5 class="card-title">${service.service_name}</h5>
-                            <p class="card-text">${service.service_description.replace(/\n/g, '<br>')}</p>
-                            <h6 class="card-subtitle">${Number(service.service_price).toLocaleString('hu-HU')} Ft/hó</h6>
-                            <button class="btn btn-primary mt-3 w-100 open-service-modal"
-                                data-id="${service.id}"
-                                data-name="${service.service_name}"
-                                data-description="${service.service_description}"
-                                data-price="${service.service_price}">
-                                Feliratkozás
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
+                            <div class="col">
+                                <div class="service-card h-100">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">${service.service_name}</h5>
+                                        <p class="card-text">${service.service_description.replace(/\n/g, '<br>')}</p>
+                                        <h6 class="card-subtitle">${Number(service.service_price).toLocaleString('hu-HU')} Ft/hó</h6>
+                                        <button class="btn btn-primary mt-3 w-100 open-service-modal"
+                                            data-id="${service.id}"
+                                            data-name="${service.service_name}"
+                                            data-description="${service.service_description}"
+                                            data-price="${service.service_price}">
+                                            Feliratkozás
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
                     });
                     $('#servicesList').html(html);
                 }).fail(function(xhr, status, error) {
                     showMessage('Hiba történt a szolgáltatások betöltésekor: ' + error, 'danger');
                 });
             }
+
             $(document).on('click', '.open-service-modal', function() {
                 const id = $(this).data('id');
                 const name = $(this).data('name');
@@ -370,93 +332,52 @@ ob_end_flush();
             });
 
             $('#nextBtn').on('click', function() {
-                $('#serviceModal').removeClass('show');
-                $('#paymentModal').addClass('show');
+                submitPayment({
+                    service_id: $('#serviceModal').data('service_id'),
+                    price: $('#serviceModal').data('price')
+                });
             });
 
             $(document).on('click', '.close-modal', function() {
                 $(this).closest('.modal').removeClass('show');
                 $('#modalOverlay').removeClass('show');
-                $('.payment-options').hide();
-                $('input[name="paymentMethod"]').prop('checked', false);
             });
 
             $(document).on('click', '#modalOverlay', function() {
                 $('.modal').removeClass('show');
                 $('#modalOverlay').removeClass('show');
-                $('.payment-options').hide();
-                $('input[name="paymentMethod"]').prop('checked', false);
-            });
-
-            $('input[name="paymentMethod"]').on('change', function() {
-                $('.payment-options').hide();
-                if (this.value === 'local') {
-                    $('#localPaymentForm').show();
-                } else if (this.value === 'bank_transfer') {
-                    $('#bankPaymentForm').show();
-                }
-            });
-
-            $('#localPaymentForm').on('submit', function(e) {
-                e.preventDefault();
-                const name = $(this).find('[name="name"]').val();
-                const email = $(this).find('[name="email"]').val();
-                if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                    showMessage('Érvénytelen név vagy email!', 'danger');
-                    return;
-                }
-                submitPayment({
-                    payment_method: 'local',
-                    name: name,
-                    email: email,
-                    price: $('#serviceModal').data('price'),
-                    service_id: $('#serviceModal').data('service_id')
-                });
-            });
-
-            $('#bankPaymentForm').on('submit', function(e) {
-                e.preventDefault();
-                const bank_account = $(this).find('[name="bank_account"]').val();
-                const description = $(this).find('[name="description"]').val();
-                if (!bank_account || !description) {
-                    showMessage('Bankszámlaszám és megjegyzés szükséges!', 'danger');
-                    return;
-                }
-                if (!/^[A-Z]{2}\d{14,}$/.test(bank_account)) {
-                    showMessage('Érvénytelen bankszámlaszám formátum! Pl. HU12345678901234', 'danger');
-                    return;
-                }
-                submitPayment({
-                    payment_method: 'bank_transfer',
-                    bank_account: bank_account,
-                    description: description,
-                    price: $('#serviceModal').data('price'),
-                    service_id: $('#serviceModal').data('service_id')
-                });
             });
 
             function submitPayment(data) {
-                console.log('Küldött adat:', data); // Debug naplózás
+                console.log('Küldött adat:', data); // Debug
                 $.ajax({
                     url: '../api/services.php',
                     method: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify(data),
                     success: function(response) {
-                        console.log('Szerver válasza:', response); // Debug naplózás
+                        console.log('Szerver válasza:', response); // Debug
                         if (response.error) {
                             showMessage(response.error, 'danger');
                         } else {
                             showMessage(response.message, 'success');
-                            setTimeout(() => window.location.href = response.redirect, 1000);
+                            setTimeout(() => window.location.href = response.payment_url, 1000);
                         }
                     },
                     error: function(xhr) {
-                        console.log('AJAX hiba:', xhr.responseText); // Debug naplózás
+                        console.log('AJAX hiba:', xhr.responseText); // Debug
                         showMessage('Hiba történt: ' + xhr.status + ' - ' + xhr.statusText, 'danger');
                     }
                 });
             }
+
+            // Példa hívás
+            $('#nextBtn').on('click', function() {
+                submitPayment({
+                    service_id: $('#serviceModal').data('service_id'),
+                    price: $('#serviceModal').data('price')
+                });
+            });
 
             function showMessage(message, type) {
                 $('#messageContainer').html(`<div class="alert alert-${type}">${message}</div>`);

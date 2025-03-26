@@ -283,10 +283,6 @@ ob_end_flush();
                                         <p>Kezdete: ${new Date(sub.start_date).toISOString().split('T')[0]}</p>
                                         ${sub.cardholder_name ? `
                                             <p>Fizetési adatok:</p>
-                                            <p>Kártyatulajdonos: ${sub.cardholder_name}</p>
-                                            <p>Kártyaszám: ****-****-****-${sub.card_number.slice(-4)}</p>
-                                            <p>Lejárat: ${sub.expiry_date}</p>
-                                            <p>CVV: ***</p>
                                             <button class="btn btn-primary btn-sm mt-2 edit-payment-btn" data-subscription-id="${sub.id}">Fizetési adatok szerkesztése</button>
                                         ` : ''}
                                         <form class="mt-2 cancel-subscription-form" data-subscription-id="${sub.id}">

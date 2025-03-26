@@ -1,11 +1,11 @@
 <?php
 session_start();
 header("Content-Type: application/json");
-header("Access-Control-Allow-Origin: *"); 
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE"); 
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
 header("Access-Control-Allow-Headers: Content-Type");
 
-require_once '../includes/config.php'; 
+require_once '../includes/config.php';
 
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
@@ -30,19 +30,16 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 switch ($method) {
     case 'GET':
-        // Felhasználói adatok lekérdezése
         $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
         $user = $stmt->get_result()->fetch_assoc();
-
-        // Előfizetések lekérdezése
+    
         $stmt = $conn->prepare("
-            SELECT s.*, srv.service_name, 
-                   pd.payment_method, pd.name, pd.email, pd.bank_account, pd.description, pd.price
+            SELECT s.id, s.service_id, s.start_date, s.status, 
+                   srv.service_name, srv.service_price
             FROM subscriptions s
             JOIN services srv ON s.service_id = srv.id
-            LEFT JOIN payment_details pd ON s.id = pd.subscription_id AND s.user_id = pd.user_id
             WHERE s.user_id = ? AND s.status = 'active'
         ");
         $stmt->bind_param("i", $user_id);
@@ -52,12 +49,10 @@ switch ($method) {
         while ($row = $result->fetch_assoc()) {
             $subscriptions[] = $row;
         }
-
+    
         http_response_code(200);
         echo json_encode(['user' => $user, 'subscriptions' => $subscriptions]);
-        break;
-
-    // A PUT, DELETE és POST részek változatlanok maradnak
+        break;    // A PUT, DELETE és POST részek változatlanok maradnak
     case 'PUT':
         $data = json_decode(file_get_contents("php://input"), true);
         $name = htmlspecialchars($data['name']);
@@ -100,25 +95,30 @@ switch ($method) {
 
         $conn->begin_transaction();
         try {
-            $stmt = $conn->prepare("DELETE FROM payment_details WHERE subscription_id = ? AND user_id = ?");
+            // Ellenőrizzük, hogy az előfizetés az adott felhasználóhoz tartozik-e
+            $stmt = $conn->prepare("SELECT COUNT(*) FROM subscriptions WHERE id = ? AND user_id = ? AND status = 'active'");
             $stmt->bind_param("ii", $subscription_id, $user_id);
             $stmt->execute();
+            $result = $stmt->get_result();
+            if ($result->fetch_row()[0] == 0) {
+                throw new Exception("Érvénytelen vagy nem létező előfizetés!");
+            }
 
-            $stmt = $conn->prepare("DELETE FROM subscriptions WHERE id = ? AND user_id = ?");
+            // Előfizetés törlése (vagy státusz 'cancelled'-re állítása)
+            $stmt = $conn->prepare("UPDATE subscriptions SET status = 'cancelled' WHERE id = ? AND user_id = ?");
             $stmt->bind_param("ii", $subscription_id, $user_id);
             $stmt->execute();
 
             $conn->commit();
             http_response_code(200);
-            echo json_encode(['message' => 'Előfizetés sikeresen lemondva és törölve!']);
+            echo json_encode(['message' => 'Előfizetés sikeresen lemondva!']);
         } catch (Exception $e) {
             $conn->rollback();
-            error_log("Hiba az előfizetés törlése során: " . $e->getMessage());
+            error_log("Hiba az előfizetés lemondása során: " . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['error' => 'Hiba történt az előfizetés törlése közben!']);
+            echo json_encode(['error' => 'Hiba történt az előfizetés lemondása közben: ' . $e->getMessage()]);
         }
         break;
-
     case 'POST':
         $data = json_decode(file_get_contents("php://input"), true);
         if (isset($data['update_payment'])) {
@@ -176,4 +176,3 @@ switch ($method) {
 
 $conn->close();
 exit;
-?>
