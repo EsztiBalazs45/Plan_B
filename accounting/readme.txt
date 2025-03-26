@@ -1,0 +1,1 @@
+ composer parancs: composer require stripe/stripe-php

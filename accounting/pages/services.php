@@ -371,7 +371,6 @@ ob_end_flush();
                 });
             }
 
-            // Példa hívás
             $('#nextBtn').on('click', function() {
                 submitPayment({
                     service_id: $('#serviceModal').data('service_id'),
