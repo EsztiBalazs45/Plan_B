@@ -5,7 +5,10 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
 header("Access-Control-Allow-Headers: Content-Type");
 
+require_once '../vendor/autoload.php'; // Stripe-hoz szükséges
 require_once '../includes/config.php';
+
+\Stripe\Stripe::setApiKey('asd');
 
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
@@ -34,7 +37,7 @@ switch ($method) {
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
         $user = $stmt->get_result()->fetch_assoc();
-    
+
         $stmt = $conn->prepare("
             SELECT s.id, s.service_id, s.start_date, s.status, 
                    srv.service_name, srv.service_price
@@ -49,10 +52,94 @@ switch ($method) {
         while ($row = $result->fetch_assoc()) {
             $subscriptions[] = $row;
         }
-    
+
+
         http_response_code(200);
         echo json_encode(['user' => $user, 'subscriptions' => $subscriptions]);
-        break;    // A PUT, DELETE és POST részek változatlanok maradnak
+        break;
+
+    case 'POST':
+        $data = json_decode(file_get_contents("php://input"), true);
+        if (isset($data['create_subscription'])) {
+            $service_id = (int)$data['service_id'];
+
+            $session = \Stripe\Checkout\Session::create([
+                'payment_method_types' => ['card'],
+                'line_items' => [[
+                    'price_data' => [
+                        'currency' => 'huf',
+                        'product_data' => ['name' => 'Teszt előfizetés'],
+                        'unit_amount' => 100000, 
+                    ],
+                    'quantity' => 1,
+                ]],
+                'mode' => 'subscription',
+                'success_url' => 'http://localhost/Bozont_cucc/accounting/pages/profile.php',
+                'cancel_url' => 'http://localhost/Bozont_cucc/accounting/pages/services.php',
+                'client_reference_id' => (string)$subscription_id,
+            ]);
+
+            http_response_code(200);
+            echo json_encode(['session_id' => $session->id]);
+        } elseif (isset($data['change_password'])) {
+            $current_password = $data['current_password'];
+            $new_password = $data['new_password'];
+            $confirm_password = $data['confirm_password'];
+
+            $stmt = $conn->prepare("SELECT password FROM users WHERE id = ?");
+            $stmt->bind_param("i", $user_id);
+            $stmt->execute();
+            $user = $stmt->get_result()->fetch_assoc();
+
+            if ($new_password !== $confirm_password) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Az új jelszavak nem egyeznek!']);
+            } elseif (!password_verify($current_password, $user['password'])) {
+                http_response_code(400);
+                echo json_encode(['error' => 'A jelenlegi jelszó helytelen!']);
+            } else {
+                $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
+                $stmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
+                $stmt->bind_param("si", $hashed_password, $user_id);
+                if ($stmt->execute()) {
+                    http_response_code(200);
+                    echo json_encode(['message' => 'Jelszó sikeresen megváltoztatva!']);
+                } else {
+                    http_response_code(500);
+                    echo json_encode(['error' => 'Hiba történt a jelszó módosítása közben!']);
+                }
+            }
+        }
+        break;
+
+    case 'DELETE':
+        $data = json_decode(file_get_contents("php://input"), true);
+        $subscription_id = (int)$data['subscription_id'];
+
+        $conn->begin_transaction();
+        try {
+            $stmt = $conn->prepare("SELECT COUNT(*) FROM subscriptions WHERE id = ? AND user_id = ? AND status = 'active'");
+            $stmt->bind_param("ii", $subscription_id, $user_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($result->fetch_row()[0] == 0) {
+                throw new Exception("Érvénytelen vagy nem létező előfizetés!");
+            }
+
+            $stmt = $conn->prepare("UPDATE subscriptions SET status = 'cancelled' WHERE id = ? AND user_id = ?");
+            $stmt->bind_param("ii", $subscription_id, $user_id);
+            $stmt->execute();
+
+            $conn->commit();
+            http_response_code(200);
+            echo json_encode(['message' => 'Előfizetés sikeresen lemondva!']);
+        } catch (Exception $e) {
+            $conn->rollback();
+            http_response_code(500);
+            echo json_encode(['error' => 'Hiba történt: ' . $e->getMessage()]);
+        }
+        break;
+
     case 'PUT':
         $data = json_decode(file_get_contents("php://input"), true);
         $name = htmlspecialchars($data['name']);
@@ -89,85 +176,6 @@ switch ($method) {
         }
         break;
 
-    case 'DELETE':
-        $data = json_decode(file_get_contents("php://input"), true);
-        $subscription_id = (int)$data['subscription_id'];
-
-        $conn->begin_transaction();
-        try {
-            // Ellenőrizzük, hogy az előfizetés az adott felhasználóhoz tartozik-e
-            $stmt = $conn->prepare("SELECT COUNT(*) FROM subscriptions WHERE id = ? AND user_id = ? AND status = 'active'");
-            $stmt->bind_param("ii", $subscription_id, $user_id);
-            $stmt->execute();
-            $result = $stmt->get_result();
-            if ($result->fetch_row()[0] == 0) {
-                throw new Exception("Érvénytelen vagy nem létező előfizetés!");
-            }
-
-            // Előfizetés törlése (vagy státusz 'cancelled'-re állítása)
-            $stmt = $conn->prepare("UPDATE subscriptions SET status = 'cancelled' WHERE id = ? AND user_id = ?");
-            $stmt->bind_param("ii", $subscription_id, $user_id);
-            $stmt->execute();
-
-            $conn->commit();
-            http_response_code(200);
-            echo json_encode(['message' => 'Előfizetés sikeresen lemondva!']);
-        } catch (Exception $e) {
-            $conn->rollback();
-            error_log("Hiba az előfizetés lemondása során: " . $e->getMessage());
-            http_response_code(500);
-            echo json_encode(['error' => 'Hiba történt az előfizetés lemondása közben: ' . $e->getMessage()]);
-        }
-        break;
-    case 'POST':
-        $data = json_decode(file_get_contents("php://input"), true);
-        if (isset($data['update_payment'])) {
-            $subscription_id = (int)$data['subscription_id'];
-            $cardholder_name = htmlspecialchars($data['cardholder_name']);
-            $card_number = htmlspecialchars($data['card_number']);
-            $expiry_date = htmlspecialchars($data['expiry_date']);
-            $cvv = htmlspecialchars($data['cvv']);
-
-            $stmt = $conn->prepare("UPDATE payment_details SET cardholder_name = ?, card_number = ?, expiry_date = ?, cvv = ? WHERE subscription_id = ? AND user_id = ?");
-            $stmt->bind_param("ssssii", $cardholder_name, $card_number, $expiry_date, $cvv, $subscription_id, $user_id);
-            if ($stmt->execute()) {
-                http_response_code(200);
-                echo json_encode(['message' => 'Fizetési adatok sikeresen frissítve!']);
-            } else {
-                http_response_code(500);
-                echo json_encode(['error' => 'Hiba történt a fizetési adatok frissítése közben!']);
-            }
-        } elseif (isset($data['change_password'])) {
-            $current_password = $data['current_password'];
-            $new_password = $data['new_password'];
-            $confirm_password = $data['confirm_password'];
-
-            $stmt = $conn->prepare("SELECT password FROM users WHERE id = ?");
-            $stmt->bind_param("i", $user_id);
-            $stmt->execute();
-            $user = $stmt->get_result()->fetch_assoc();
-
-            if ($new_password !== $confirm_password) {
-                http_response_code(400);
-                echo json_encode(['error' => 'Az új jelszavak nem egyeznek!']);
-            } elseif (!password_verify($current_password, $user['password'])) {
-                http_response_code(400);
-                echo json_encode(['error' => 'A jelenlegi jelszó helytelen!']);
-            } else {
-                $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
-                $stmt = $conn->prepare("UPDATE users SET password = ? WHERE id = ?");
-                $stmt->bind_param("si", $hashed_password, $user_id);
-                if ($stmt->execute()) {
-                    http_response_code(200);
-                    echo json_encode(['message' => 'Jelszó sikeresen megváltoztatva!']);
-                } else {
-                    http_response_code(500);
-                    echo json_encode(['error' => 'Hiba történt a jelszó módosítása közben!']);
-                }
-            }
-        }
-        break;
-
     default:
         http_response_code(405);
         echo json_encode(['error' => 'Nem támogatott HTTP metódus']);
@@ -176,3 +184,4 @@ switch ($method) {
 
 $conn->close();
 exit;
+?>

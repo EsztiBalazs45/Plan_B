@@ -23,7 +23,7 @@ if ($conn->connect_error) {
     exit();
 }
 
-\Stripe\Stripe::setApiKey('valami');
+\Stripe\Stripe::setApiKey('sk_test_51R5NbyHUv7jEVnHmYVlHmBjKx6mbmqQtxWkqEKOp06JvQdAK4jx0IfGnhZdll4zKA3ee4knG1HWC3DJFmYTioA1D006q3pwsbW');
 
 switch ($method) {
     case 'GET':
