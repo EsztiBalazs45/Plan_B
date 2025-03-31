@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Már 25. 16:23
+-- Létrehozás ideje: 2025. Már 31. 10:44
 -- Kiszolgáló verziója: 10.4.32-MariaDB
 -- PHP verzió: 8.2.12
 
@@ -366,32 +366,6 @@ CREATE TABLE `password_reset_tokens` (
 -- --------------------------------------------------------
 
 --
--- Tábla szerkezet ehhez a táblához `payment_details`
---
-
-CREATE TABLE `payment_details` (
-  `id` bigint(20) UNSIGNED NOT NULL,
-  `user_id` bigint(20) UNSIGNED NOT NULL,
-  `subscription_id` bigint(20) UNSIGNED NOT NULL,
-  `payment_method` enum('local','bank_transfer','','') NOT NULL,
-  `name` varchar(255) NOT NULL,
-  `email` varchar(255) NOT NULL,
-  `bank_account` varchar(20) NOT NULL,
-  `description` text DEFAULT NULL,
-  `price` decimal(19,2) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- A tábla adatainak kiíratása `payment_details`
---
-
-INSERT INTO `payment_details` (`id`, `user_id`, `subscription_id`, `payment_method`, `name`, `email`, `bank_account`, `description`, `price`) VALUES
-(1, 108, 64, 'local', 'Tac András', 'tictac@jedlik.hu', '', NULL, 48000.00),
-(3, 106, 69, 'local', 'Tac András', 'tictac@jedlik.hu', '', NULL, 36600.00);
-
--- --------------------------------------------------------
-
---
 -- Tábla szerkezet ehhez a táblához `personal_acces_token`
 --
 
@@ -418,21 +392,22 @@ CREATE TABLE `services` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `service_name` varchar(255) NOT NULL,
   `service_description` text NOT NULL,
-  `service_price` decimal(10,0) NOT NULL
+  `service_price` decimal(10,0) NOT NULL,
+  `service_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- A tábla adatainak kiíratása `services`
 --
 
-INSERT INTO `services` (`id`, `service_name`, `service_description`, `service_price`) VALUES
-(1, 'Könyvelési Alap\r\n\r\n', 'Ideális kisvállalkozásoknak és egyéni vállalkozóknak, akik egyszerű, de megbízható könyvelési megoldást keresnek. Tartalmazza az alapvető könyvelést, havi bevallások elkészítését (ÁFA, SZJA), valamint évente egy adóbevallást. Személyre szabott tanácsadás nélkül, de e-mailes támogatással.\"\r\n\r\n', 25000),
-(2, 'Üzleti Prémium\r\n\r\n', 'Közepes méretű vállalkozásoknak ajánljuk, akik teljes körű könyvelési szolgáltatást igényelnek. Az alap könyvelésen túl (bérszámfejtés, ÁFA-bevallás, éves beszámoló) havi riportokat és negyedéves pénzügyi elemzést biztosítunk. Telefonos és személyes konzultáció havi 1 órában.\r\n\r\n', 35000),
-(3, 'Teljes Kontroll\r\n\r\n\r\n', 'Nagyvállalatok és összetett pénzügyi igényekkel rendelkező cégek számára. Minden könyvelési feladatot ellátunk (bérszámfejtés, kettős könyvvitel, adóoptimalizálás), plusz havi cash-flow elemzés, adótanácsadás és korlátlan konzultáció. Prioritásos ügyfélkezelés és 24/7 elérhetőség vészhelyzet esetén.\r\n\r\n', 48000),
-(4, 'Kezdő Vállalkozó\r\n\r\n\r\n\r\n\r\n\r\n', 'Frissen induló vállalkozásoknak szóló csomag, hogy az első lépések egyszerűek legyenek. Egyszeri cégalapítási tanácsadás, alap könyvelés (havi 50 bizonylatig), ÁFA-bevallás és egy adóbevallás az év végén. Online felületen követheted a pénzügyeidet!\r\n\r\n', 15000),
-(5, 'Személyre Szabott Könyvelés\r\n\r\n\r\n\r\n\r\n\r\n\r\n', 'Rugalmas megoldás egyedi igényekre. Te döntöd el, mire van szükséged: bérszámfejtés, adótanácsadás, könyvvitel, vagy akár pályázati pénzügyi tervezés. Egyedi árajánlat alapján, havi fix díjjal, korlátlan e-mailes és havi 2 óra személyes konzultációval.\r\n\r\n', 40000),
-(6, 'Bérügyi Alap\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n', 'Kifejezetten azoknak a vállalkozásoknak, akiknek a bérszámfejtés a legfontosabb. Havi bérszámfejtés akár 10 alkalmazottig, TB- és járulékbevallások elkészítése, valamint munkavállalói dokumentumok vezetése. Egyszerű könyvelési feladatok nélkül, de havi e-mailes összesítővel a bérköltségekről.\r\n\r\n', 36600),
-(7, 'Adómester\r\n\r\n\r\n\r\n', 'Cégeknek és vállalkozóknak, akik az adóterhek csökkentésére fókuszálnak. Teljes körű adótanácsadás, adóstratégia kidolgozása, havi könyvelés (100 bizonylatig), ÁFA-bevallás és éves adóbevallás. Negyedévente személyes konzultáció az adóoptimalizálás frissítésére, plusz egyedi elemzés a költségcsökkentési lehetőségekről.\r\n\r\n', 78000);
+INSERT INTO `services` (`id`, `service_name`, `service_description`, `service_price`, `service_id`) VALUES
+(1, 'Könyvelési Alap\r\n\r\n', 'Ideális kisvállalkozásoknak és egyéni vállalkozóknak, akik egyszerű, de megbízható könyvelési megoldást keresnek. Tartalmazza az alapvető könyvelést, havi bevallások elkészítését (ÁFA, SZJA), valamint évente egy adóbevallást. Személyre szabott tanácsadás nélkül, de e-mailes támogatással.\"\r\n\r\n', 25000, 0),
+(2, 'Üzleti Prémium\r\n\r\n', 'Közepes méretű vállalkozásoknak ajánljuk, akik teljes körű könyvelési szolgáltatást igényelnek. Az alap könyvelésen túl (bérszámfejtés, ÁFA-bevallás, éves beszámoló) havi riportokat és negyedéves pénzügyi elemzést biztosítunk. Telefonos és személyes konzultáció havi 1 órában.\r\n\r\n', 35000, 1),
+(3, 'Teljes Kontroll\r\n\r\n\r\n', 'Nagyvállalatok és összetett pénzügyi igényekkel rendelkező cégek számára. Minden könyvelési feladatot ellátunk (bérszámfejtés, kettős könyvvitel, adóoptimalizálás), plusz havi cash-flow elemzés, adótanácsadás és korlátlan konzultáció. Prioritásos ügyfélkezelés és 24/7 elérhetőség vészhelyzet esetén.\r\n\r\n', 48000, 2),
+(4, 'Kezdő Vállalkozó\r\n\r\n\r\n\r\n\r\n\r\n', 'Frissen induló vállalkozásoknak szóló csomag, hogy az első lépések egyszerűek legyenek. Egyszeri cégalapítási tanácsadás, alap könyvelés (havi 50 bizonylatig), ÁFA-bevallás és egy adóbevallás az év végén. Online felületen követheted a pénzügyeidet!\r\n\r\n', 15000, 3),
+(5, 'Személyre Szabott Könyvelés\r\n\r\n\r\n\r\n\r\n\r\n\r\n', 'Rugalmas megoldás egyedi igényekre. Te döntöd el, mire van szükséged: bérszámfejtés, adótanácsadás, könyvvitel, vagy akár pályázati pénzügyi tervezés. Egyedi árajánlat alapján, havi fix díjjal, korlátlan e-mailes és havi 2 óra személyes konzultációval.\r\n\r\n', 40000, 4),
+(6, 'Bérügyi Alap\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n', 'Kifejezetten azoknak a vállalkozásoknak, akiknek a bérszámfejtés a legfontosabb. Havi bérszámfejtés akár 10 alkalmazottig, TB- és járulékbevallások elkészítése, valamint munkavállalói dokumentumok vezetése. Egyszerű könyvelési feladatok nélkül, de havi e-mailes összesítővel a bérköltségekről.\r\n\r\n', 36600, 5),
+(7, 'Adómester\r\n\r\n\r\n\r\n', 'Cégeknek és vállalkozóknak, akik az adóterhek csökkentésére fókuszálnak. Teljes körű adótanácsadás, adóstratégia kidolgozása, havi könyvelés (100 bizonylatig), ÁFA-bevallás és éves adóbevallás. Negyedévente személyes konzultáció az adóoptimalizálás frissítésére, plusz egyedi elemzés a költségcsökkentési lehetőségekről.\r\n\r\n', 78000, 6);
 
 -- --------------------------------------------------------
 
@@ -503,10 +478,8 @@ CREATE TABLE `subscriptions` (
 --
 
 INSERT INTO `subscriptions` (`id`, `user_id`, `service_id`, `start_date`, `end_date`, `status`) VALUES
-(38, 106, 2, '2025-03-19 09:50:32', NULL, 'active'),
-(49, 109, 1, '2025-03-19 10:23:17', NULL, 'active'),
-(64, 108, 3, '2025-03-25 14:58:39', NULL, 'active'),
-(69, 106, 6, '2025-03-25 15:12:14', NULL, 'active');
+(108, 108, 3, '2025-03-26 10:09:42', NULL, ''),
+(132, 106, 4, '2025-03-31 08:39:12', NULL, '');
 
 -- --------------------------------------------------------
 
@@ -724,14 +697,6 @@ ALTER TABLE `password_reset_tokens`
   ADD PRIMARY KEY (`email`);
 
 --
--- A tábla indexei `payment_details`
---
-ALTER TABLE `payment_details`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `sub_id` (`subscription_id`),
-  ADD UNIQUE KEY `user_id` (`user_id`);
-
---
 -- A tábla indexei `personal_acces_token`
 --
 ALTER TABLE `personal_acces_token`
@@ -765,8 +730,8 @@ ALTER TABLE `sessions`
 --
 ALTER TABLE `subscriptions`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `service_id` (`service_id`),
-  ADD KEY `user_id` (`user_id`);
+  ADD KEY `user_id` (`user_id`) USING BTREE,
+  ADD KEY `service_id` (`service_id`) USING BTREE;
 
 --
 -- A tábla indexei `users`
@@ -817,12 +782,6 @@ ALTER TABLE `newsletters`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
--- AUTO_INCREMENT a táblához `payment_details`
---
-ALTER TABLE `payment_details`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
-
---
 -- AUTO_INCREMENT a táblához `personal_acces_token`
 --
 ALTER TABLE `personal_acces_token`
@@ -844,7 +803,7 @@ ALTER TABLE `service_users`
 -- AUTO_INCREMENT a táblához `subscriptions`
 --
 ALTER TABLE `subscriptions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=70;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=134;
 
 --
 -- AUTO_INCREMENT a táblához `users`
@@ -876,13 +835,6 @@ ALTER TABLE `newsletters`
   ADD CONSTRAINT `newsletters_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
 
 --
--- Megkötések a táblához `payment_details`
---
-ALTER TABLE `payment_details`
-  ADD CONSTRAINT `FK_payment_details_subscriptions_id` FOREIGN KEY (`subscription_id`) REFERENCES `subscriptions` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `FK_payment_details_users_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
-
---
 -- Megkötések a táblához `service_users`
 --
 ALTER TABLE `service_users`
@@ -893,7 +845,7 @@ ALTER TABLE `service_users`
 --
 ALTER TABLE `subscriptions`
   ADD CONSTRAINT `FK_subscriptions_services_id` FOREIGN KEY (`service_id`) REFERENCES `services` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  ADD CONSTRAINT `subscriptions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `FK_subscriptions_users_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
