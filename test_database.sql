@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Ápr 01. 16:29
+-- Létrehozás ideje: 2025. Ápr 01. 23:01
 -- Kiszolgáló verziója: 10.4.32-MariaDB
 -- PHP verzió: 8.2.12
 
@@ -366,6 +366,29 @@ CREATE TABLE `password_reset_tokens` (
 -- --------------------------------------------------------
 
 --
+-- Tábla szerkezet ehhez a táblához `payment`
+--
+
+CREATE TABLE `payment` (
+  `id` bigint(20) NOT NULL,
+  `user_id` bigint(20) NOT NULL,
+  `service_id` bigint(20) NOT NULL,
+  `payment_intent_id` varchar(255) NOT NULL,
+  `amount` decimal(10,0) NOT NULL,
+  `currency` varchar(3) NOT NULL,
+  `payment_date` datetime NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- A tábla adatainak kiíratása `payment`
+--
+
+INSERT INTO `payment` (`id`, `user_id`, `service_id`, `payment_intent_id`, `amount`, `currency`, `payment_date`) VALUES
+(0, 106, 6, 'pi_3R9Bu6HUv7jEVnHm1H1GDugk', 36600, '', '2025-04-01 22:59:32');
+
+-- --------------------------------------------------------
+
+--
 -- Tábla szerkezet ehhez a táblához `personal_acces_token`
 --
 
@@ -479,7 +502,8 @@ CREATE TABLE `subscriptions` (
 
 INSERT INTO `subscriptions` (`id`, `user_id`, `service_id`, `start_date`, `end_date`, `status`) VALUES
 (108, 108, 3, '2025-03-26 10:09:42', NULL, 'active'),
-(132, 106, 4, '2025-03-31 08:39:12', NULL, 'active');
+(132, 106, 4, '2025-03-31 08:39:12', NULL, 'active'),
+(142, 106, 6, '2025-04-01 20:59:32', NULL, 'active');
 
 -- --------------------------------------------------------
 
@@ -697,6 +721,14 @@ ALTER TABLE `password_reset_tokens`
   ADD PRIMARY KEY (`email`);
 
 --
+-- A tábla indexei `payment`
+--
+ALTER TABLE `payment`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `service_id` (`service_id`);
+
+--
 -- A tábla indexei `personal_acces_token`
 --
 ALTER TABLE `personal_acces_token`
@@ -803,7 +835,7 @@ ALTER TABLE `service_users`
 -- AUTO_INCREMENT a táblához `subscriptions`
 --
 ALTER TABLE `subscriptions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=138;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=143;
 
 --
 -- AUTO_INCREMENT a táblához `users`

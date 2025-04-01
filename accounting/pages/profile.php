@@ -22,9 +22,9 @@ ob_end_flush();
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://js.stripe.com/v3/"></script> <!-- Stripe JS -->
+    <script src="https://js.stripe.com/v3/"></script>
     <style>
-                body {
+        body {
             background: linear-gradient(135deg, #f0f4f8, #334155);
             font-family: 'Poppins', sans-serif;
             min-height: 100vh;
@@ -126,22 +126,16 @@ ob_end_flush();
             font-size: 0.875rem;
         }
 
-        .subscription-card {
+        .subscription-card,
+        .payment-card {
             border-radius: 15px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             transition: transform 0.3s ease;
         }
 
-        .subscription-card:hover {
+        .subscription-card:hover,
+        .payment-card:hover {
             transform: translateY(-5px);
-        }
-
-        .payment-details-form {
-            display: none;
-        }
-
-        .payment-details-form.active {
-            display: block;
         }
 
         .alert {
@@ -184,7 +178,6 @@ ob_end_flush();
                 padding: 0.5rem 1.2rem;
             }
         }
-
     </style>
 </head>
 
@@ -287,10 +280,10 @@ ob_end_flush();
 
                     const profileSummary = document.getElementById("profile-summary");
                     profileSummary.innerHTML = `
-            <h4>${data.user.name}</h4>
-            <p class="text-muted"><i class="fas fa-envelope"></i> ${data.user.email}</p>
-            <p class="text-muted"><i class="fas fa-user"></i> ${data.user.username}</p>
-        `;
+                <h4>${data.user.name}</h4>
+                <p class="text-muted"><i class="fas fa-envelope"></i> ${data.user.email}</p>
+                <p class="text-muted"><i class="fas fa-user"></i> ${data.user.username}</p>
+            `;
 
                     document.getElementById("name").value = data.user.name;
                     document.getElementById("email").value = data.user.email;
@@ -299,38 +292,34 @@ ob_end_flush();
                     const subscriptionsContainer = document.getElementById("subscriptions-container");
                     if (!data.subscriptions || data.subscriptions.length === 0) {
                         subscriptionsContainer.innerHTML = `
-                <p class="text-muted">Nincs előfizetésed. <a href="services.php" class="btn btn-primary btn-sm" id="new-subscription-btn">Új előfizetés hozzáadása</a></p>
-            `;
+                    <p class="text-muted">Nincs előfizetésed. <a href="services.php" class="btn btn-primary btn-sm" id="new-subscription-btn">Új előfizetés hozzáadása</a></p>
+                `;
                     } else {
                         let html = '<div class="row">';
                         data.subscriptions.forEach(sub => {
                             html += `
-                    <div class="col-md-6 mb-3">
-                        <div class="card subscription-card">
-                            <div class="card-body">
-                                <h6>${sub.service_name}</h6>
-                                <p>Összeg: ${sub.service_price} Ft/hó</p>
-                                <p>Kezdete: ${new Date(sub.start_date).toLocaleDateString('hu-HU')}</p>
-                                <p>Státusz: <span class="${sub.status === 'active' ? 'text-success' : 'text-danger'}">${sub.status === 'active' ? 'Aktív' : 'Inaktív'}</span></p>
-                                ${sub.status === 'active' ? `
+                        <div class="col-md-6 mb-3">
+                            <div class="card subscription-card">
+                                <div class="card-body">
+                                    <h6>${sub.service_name}</h6>
+                                    <p>Összeg: ${sub.service_price} Ft/hó</p>
+                                    <p>Kezdete: ${new Date(sub.start_date).toLocaleDateString('hu-HU')}</p>
                                     <form class="mt-2 cancel-subscription-form" data-subscription-id="${sub.id}">
                                         <button type="submit" class="btn btn-danger btn-sm">Lemondás</button>
                                     </form>
-                                ` : ''}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `;
+                    `;
                         });
                         html += '</div><p><a href="services.php" class="btn btn-primary" id="new-subscription-btn">Új előfizetés hozzáadása</a></p>';
                         subscriptionsContainer.innerHTML = html;
                     }
 
-                    // Ellenőrizzük, hogy létezik-e a gomb, mielőtt eseménykezelőt adunk hozzá
                     const newSubscriptionBtn = document.getElementById("new-subscription-btn");
                     if (newSubscriptionBtn) {
                         newSubscriptionBtn.addEventListener("click", function(e) {
-                            e.preventDefault(); // Megakadályozzuk az alapértelmezett link működést
+                            e.preventDefault();
                             fetch("../api/profile.php", {
                                     method: "POST",
                                     headers: {
@@ -338,7 +327,7 @@ ob_end_flush();
                                     },
                                     body: JSON.stringify({
                                         create_subscription: true,
-                                        service_id: 1 // Teszt célból fix service_id, ezt később dinamikusan kell kezelni
+                                        service_id: 1
                                     })
                                 })
                                 .then(response => response.json())
@@ -353,8 +342,6 @@ ob_end_flush();
                                 })
                                 .catch(error => showMessage("Hiba: " + error.message, "danger"));
                         });
-                    } else {
-                        console.warn("A 'new-subscription-btn' elem nem található a DOM-ban.");
                     }
                 })
                 .catch(error => {

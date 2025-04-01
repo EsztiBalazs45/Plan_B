@@ -7,7 +7,7 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-if (!isLoggedIn()) {
+if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
     echo json_encode(['error' => 'Nem vagy bejelentkezve!']);
     exit();
@@ -15,7 +15,7 @@ if (!isLoggedIn()) {
 
 $user_id = $_SESSION['user_id'];
 $method = $_SERVER['REQUEST_METHOD'];
-$conn = new mysqli("localhost", "root", "", "asd");
+$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
 if ($conn->connect_error) {
     http_response_code(500);
@@ -23,7 +23,7 @@ if ($conn->connect_error) {
     exit();
 }
 
-\Stripe\Stripe::setApiKey('asd');
+\Stripe\Stripe::setApiKey('sk_test_51R5NbyHUv7jEVnHmYVlHmBjKx6mbmqQtxWkqEKOp06JvQdAK4jx0IfGnhZdll4zKA3ee4knG1HWC3DJFmYTioA1D006q3pwsbW');
 
 switch ($method) {
     case 'GET':
@@ -57,7 +57,6 @@ switch ($method) {
             exit();
         }
 
-        // Szolgáltatás adatainak lekérdezése
         $stmt = $conn->prepare("SELECT service_name, service_price FROM services WHERE id = ?");
         $stmt->bind_param("i", $service_id);
         $stmt->execute();
@@ -69,14 +68,12 @@ switch ($method) {
         }
         $service = $result->fetch_assoc();
 
-        // Ár ellenőrzése
         if ($price != $service['service_price']) {
             http_response_code(400);
             echo json_encode(['error' => 'Az ár nem egyezik a szolgáltatás árával!']);
             exit();
         }
 
-        // Stripe Checkout Session létrehozása (még nem szúrunk be semmit az adatbázisba)
         $session = \Stripe\Checkout\Session::create([
             'payment_method_types' => ['card'],
             'line_items' => [[
@@ -92,7 +89,7 @@ switch ($method) {
             'mode' => 'payment',
             'success_url' => 'http://localhost/Bozont_cucc/accounting/pages/profile.php',
             'cancel_url' => 'http://localhost/Bozont_cucc/accounting/pages/services.php',
-            'client_reference_id' => $user_id . '|' . $service_id, // Kombinált azonosító
+            'client_reference_id' => $user_id . '|' . $service_id,
             'metadata' => [
                 'user_id' => $user_id,
                 'service_id' => $service_id

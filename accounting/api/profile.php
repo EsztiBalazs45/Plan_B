@@ -5,10 +5,14 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
 header("Access-Control-Allow-Headers: Content-Type");
 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 require_once '../vendor/autoload.php';
 require_once '../includes/config.php';
 
-\Stripe\Stripe::setApiKey('asd');
+\Stripe\Stripe::setApiKey('sk_test_51R5NbyHUv7jEVnHmYVlHmBjKx6mbmqQtxWkqEKOp06JvQdAK4jx0IfGnhZdll4zKA3ee4knG1HWC3DJFmYTioA1D006q3pwsbW');
 
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
@@ -16,12 +20,7 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "asd";
-
-$conn = new mysqli($servername, $username, $password, $dbname);
+$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 if ($conn->connect_error) {
     http_response_code(500);
     echo json_encode(['error' => 'Kapcsolódási hiba: ' . $conn->connect_error]);
@@ -34,17 +33,28 @@ $method = $_SERVER['REQUEST_METHOD'];
 switch ($method) {
     case 'GET':
         $stmt = $conn->prepare("SELECT * FROM users WHERE id = ?");
+        if (!$stmt) {
+            http_response_code(500);
+            echo json_encode(['error' => 'SQL előkészítési hiba (users): ' . $conn->error]);
+            exit;
+        }
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
         $user = $stmt->get_result()->fetch_assoc();
+        $stmt->close();
 
         $stmt = $conn->prepare("
-            SELECT s.id, s.service_id, s.start_date, s.status, 
+            SELECT s.id, s.service_id, s.start_date, 
                    srv.service_name, srv.service_price
             FROM subscriptions s
             JOIN services srv ON s.service_id = srv.id
             WHERE s.user_id = ?
-        "); 
+        ");
+        if (!$stmt) {
+            http_response_code(500);
+            echo json_encode(['error' => 'SQL előkészítési hiba (subscriptions): ' . $conn->error]);
+            exit;
+        }
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -52,29 +62,48 @@ switch ($method) {
         while ($row = $result->fetch_assoc()) {
             $subscriptions[] = $row;
         }
+        $stmt->close();
 
         http_response_code(200);
         echo json_encode(['user' => $user, 'subscriptions' => $subscriptions]);
         break;
+
+    // A többi ág (POST, DELETE, PUT) változatlan maradhat
     case 'POST':
         $data = json_decode(file_get_contents("php://input"), true);
         if (isset($data['create_subscription'])) {
             $service_id = (int)$data['service_id'];
+
+            $stmt = $conn->prepare("SELECT service_name, service_price FROM services WHERE id = ?");
+            $stmt->bind_param("i", $service_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            if ($result->num_rows == 0) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Érvénytelen szolgáltatás azonosító']);
+                exit;
+            }
+            $service = $result->fetch_assoc();
+            $stmt->close();
 
             $session = \Stripe\Checkout\Session::create([
                 'payment_method_types' => ['card'],
                 'line_items' => [[
                     'price_data' => [
                         'currency' => 'huf',
-                        'product_data' => ['name' => 'Teszt előfizetés'],
-                        'unit_amount' => 100000,
+                        'product_data' => ['name' => $service['service_name']],
+                        'unit_amount' => (int)($service['service_price'] * 100),
                     ],
                     'quantity' => 1,
                 ]],
-                'mode' => 'subscription',
+                'mode' => 'payment',
                 'success_url' => 'http://localhost/Bozont_cucc/accounting/pages/profile.php',
                 'cancel_url' => 'http://localhost/Bozont_cucc/accounting/pages/services.php',
-                'client_reference_id' => (string)$subscription_id,
+                'client_reference_id' => $user_id . '|' . $service_id,
+                'metadata' => [
+                    'user_id' => $user_id,
+                    'service_id' => $service_id
+                ]
             ]);
 
             http_response_code(200);
@@ -88,6 +117,7 @@ switch ($method) {
             $stmt->bind_param("i", $user_id);
             $stmt->execute();
             $user = $stmt->get_result()->fetch_assoc();
+            $stmt->close();
 
             if ($new_password !== $confirm_password) {
                 http_response_code(400);
@@ -106,6 +136,7 @@ switch ($method) {
                     http_response_code(500);
                     echo json_encode(['error' => 'Hiba történt a jelszó módosítása közben!']);
                 }
+                $stmt->close();
             }
         }
         break;
@@ -116,17 +147,19 @@ switch ($method) {
 
         $conn->begin_transaction();
         try {
-            $stmt = $conn->prepare("SELECT COUNT(*) FROM subscriptions WHERE id = ? AND user_id = ? AND status = 'active'");
+            $stmt = $conn->prepare("SELECT COUNT(*) FROM subscriptions WHERE id = ? AND user_id = ?");
             $stmt->bind_param("ii", $subscription_id, $user_id);
             $stmt->execute();
             $result = $stmt->get_result();
             if ($result->fetch_row()[0] == 0) {
                 throw new Exception("Érvénytelen vagy nem létező előfizetés!");
             }
+            $stmt->close();
 
             $stmt = $conn->prepare("UPDATE subscriptions SET status = 'cancelled' WHERE id = ? AND user_id = ?");
             $stmt->bind_param("ii", $subscription_id, $user_id);
             $stmt->execute();
+            $stmt->close();
 
             $conn->commit();
             http_response_code(200);
@@ -152,6 +185,7 @@ switch ($method) {
             echo json_encode(['error' => 'Ez az email cím már foglalt!']);
             exit;
         }
+        $stmt->close();
 
         $stmt = $conn->prepare("SELECT id FROM users WHERE username = ? AND id != ?");
         $stmt->bind_param("si", $username, $user_id);
@@ -161,6 +195,7 @@ switch ($method) {
             echo json_encode(['error' => 'Ez a felhasználónév már foglalt!']);
             exit;
         }
+        $stmt->close();
 
         $stmt = $conn->prepare("UPDATE users SET name = ?, email = ?, username = ? WHERE id = ?");
         $stmt->bind_param("sssi", $name, $email, $username, $user_id);
@@ -172,6 +207,7 @@ switch ($method) {
             http_response_code(500);
             echo json_encode(['error' => 'Hiba történt a frissítés során!']);
         }
+        $stmt->close();
         break;
 
     default:
@@ -182,3 +218,4 @@ switch ($method) {
 
 $conn->close();
 exit;
+?>
