@@ -5,7 +5,7 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
 header("Access-Control-Allow-Headers: Content-Type");
 
-require_once '../vendor/autoload.php'; // Stripe-hoz szükséges
+require_once '../vendor/autoload.php';
 require_once '../includes/config.php';
 
 \Stripe\Stripe::setApiKey('asd');
@@ -43,8 +43,8 @@ switch ($method) {
                    srv.service_name, srv.service_price
             FROM subscriptions s
             JOIN services srv ON s.service_id = srv.id
-            WHERE s.user_id = ? AND s.status = 'active'
-        ");
+            WHERE s.user_id = ?
+        "); 
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
         $result = $stmt->get_result();
@@ -53,11 +53,9 @@ switch ($method) {
             $subscriptions[] = $row;
         }
 
-
         http_response_code(200);
         echo json_encode(['user' => $user, 'subscriptions' => $subscriptions]);
         break;
-
     case 'POST':
         $data = json_decode(file_get_contents("php://input"), true);
         if (isset($data['create_subscription'])) {
@@ -69,7 +67,7 @@ switch ($method) {
                     'price_data' => [
                         'currency' => 'huf',
                         'product_data' => ['name' => 'Teszt előfizetés'],
-                        'unit_amount' => 100000, 
+                        'unit_amount' => 100000,
                     ],
                     'quantity' => 1,
                 ]],
@@ -184,4 +182,3 @@ switch ($method) {
 
 $conn->close();
 exit;
-?>

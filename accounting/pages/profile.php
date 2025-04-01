@@ -24,166 +24,6 @@ ob_end_flush();
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://js.stripe.com/v3/"></script> <!-- Stripe JS -->
     <style>
-        body {
-            background: linear-gradient(135deg, #f0f4f8, #334155);
-            font-family: 'Poppins', sans-serif;
-            min-height: 100vh;
-            color: #263238;
-        }
-
-        .content-wrapper {
-            padding: 2rem;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .card {
-            border: none;
-            border-radius: 20px;
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-            background: #ffffff;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            animation: fadeInUp 0.5s ease-out;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-        }
-
-        .card-header {
-            background: linear-gradient(135deg, #1976d2, #42a5f5);
-            color: #ffffff;
-            border-radius: 20px 20px 0 0;
-            padding: 1.5rem;
-            font-weight: 600;
-        }
-
-        .card-body {
-            padding: 2rem;
-        }
-
-        .profile-avatar {
-            width: 150px;
-            height: 150px;
-            object-fit: cover;
-            border: 4px solid #1976d2;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-        }
-
-        .profile-avatar:hover {
-            transform: scale(1.05);
-        }
-
-        .form-label {
-            font-weight: 500;
-            color: #263238;
-        }
-
-        .form-control {
-            border-radius: 10px;
-            border: 1px solid #b0bec5;
-            padding: 0.75rem;
-            transition: border-color 0.3s ease;
-        }
-
-        .form-control:focus {
-            border-color: #1976d2;
-            box-shadow: 0 0 5px rgba(25, 118, 210, 0.3);
-        }
-
-        .btn {
-            border-radius: 50px;
-            padding: 0.6rem 1.8rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn-primary {
-            background: #1976d2;
-            border: none;
-        }
-
-        .btn-danger {
-            background: #d32f2f;
-            border: none;
-        }
-
-        .btn-secondary {
-            background: #607d8b;
-            border: none;
-        }
-
-        .btn-sm {
-            padding: 0.4rem 1rem;
-            font-size: 0.875rem;
-        }
-
-        .subscription-card {
-            border-radius: 15px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s ease;
-        }
-
-        .subscription-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .payment-details-form {
-            display: none;
-        }
-
-        .payment-details-form.active {
-            display: block;
-        }
-
-        .alert {
-            border-radius: 10px;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .text-muted {
-            color: #78909c;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .content-wrapper {
-                padding: 1rem;
-            }
-
-            .card-body {
-                padding: 1.5rem;
-            }
-
-            .profile-avatar {
-                width: 120px;
-                height: 120px;
-            }
-
-            .btn {
-                padding: 0.5rem 1.2rem;
-            }
-        }
     </style>
 </head>
 
@@ -254,7 +94,7 @@ ob_end_flush();
     </div>
 
     <script>
-        const stripe = Stripe('pk_test_51R5NbyHUv7jEVnHmkRdayeXrNQhu42x39hb1LsgXN6Cgmm9tKNIP7oi15uoBNmKPvkPAoLwqINFTeMKSj6JPrwsX00e2f2cqJN'); 
+        const stripe = Stripe('pk_test_51R5NbyHUv7jEVnHmkRdayeXrNQhu42x39hb1LsgXN6Cgmm9tKNIP7oi15uoBNmKPvkPAoLwqINFTeMKSj6JPrwsX00e2f2cqJN');
 
         function showMessage(message, type) {
             const container = document.getElementById('message-container');
@@ -286,10 +126,10 @@ ob_end_flush();
 
                     const profileSummary = document.getElementById("profile-summary");
                     profileSummary.innerHTML = `
-                    <h4>${data.user.name}</h4>
-                    <p class="text-muted"><i class="fas fa-envelope"></i> ${data.user.email}</p>
-                    <p class="text-muted"><i class="fas fa-user"></i> ${data.user.username}</p>
-                `;
+            <h4>${data.user.name}</h4>
+            <p class="text-muted"><i class="fas fa-envelope"></i> ${data.user.email}</p>
+            <p class="text-muted"><i class="fas fa-user"></i> ${data.user.username}</p>
+        `;
 
                     document.getElementById("name").value = data.user.name;
                     document.getElementById("email").value = data.user.email;
@@ -298,60 +138,69 @@ ob_end_flush();
                     const subscriptionsContainer = document.getElementById("subscriptions-container");
                     if (!data.subscriptions || data.subscriptions.length === 0) {
                         subscriptionsContainer.innerHTML = `
-                        <p class="text-muted">Nincs aktív előfizetésed. <button id="new-subscription-btn" class="btn btn-primary btn-sm">Új előfizetés hozzáadása</button></p>
-                    `;
+                <p class="text-muted">Nincs előfizetésed. <a href="services.php" class="btn btn-primary btn-sm" id="new-subscription-btn">Új előfizetés hozzáadása</a></p>
+            `;
                     } else {
                         let html = '<div class="row">';
                         data.subscriptions.forEach(sub => {
                             html += `
-                            <div class="col-md-6 mb-3">
-                                <div class="card subscription-card">
-                                    <div class="card-body">
-                                        <h6>${sub.service_name}</h6>
-                                        <p>Összeg: ${sub.service_price} Ft/hó</p>
-                                        <p>Kezdete: ${new Date(sub.start_date).toISOString().split('T')[0]}</p>
-                                        <form class="mt-2 cancel-subscription-form" data-subscription-id="${sub.id}">
-                                            <button type="submit" class="btn btn-danger btn-sm">Lemondás</button>
-                                        </form>
-                                    </div>
-                                </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card subscription-card">
+                            <div class="card-body">
+                                <h6>${sub.service_name}</h6>
+                                <p>Összeg: ${sub.service_price} Ft/hó</p>
+                                <p>Kezdete: ${new Date(sub.start_date).toLocaleDateString('hu-HU')}</p>
+                                <p>Státusz: <span class="${sub.status === 'active' ? 'text-success' : 'text-danger'}">${sub.status === 'active' ? 'Aktív' : 'Inaktív'}</span></p>
+                                ${sub.status === 'active' ? `
+                                    <form class="mt-2 cancel-subscription-form" data-subscription-id="${sub.id}">
+                                        <button type="submit" class="btn btn-danger btn-sm">Lemondás</button>
+                                    </form>
+                                ` : ''}
                             </div>
-                        `;
+                        </div>
+                    </div>
+                `;
                         });
-                        html += '</div><p><button id="new-subscription-btn" class="btn btn-primary">Új előfizetés hozzáadása</button></p>';
+                        html += '</div><p><a href="services.php" class="btn btn-primary" id="new-subscription-btn">Új előfizetés hozzáadása</a></p>';
                         subscriptionsContainer.innerHTML = html;
                     }
 
-                    document.getElementById("new-subscription-btn").addEventListener("click", function() {
-                        fetch("../api/profile.php", {
-                                method: "POST",
-                                headers: {
-                                    "Content-Type": "application/json"
-                                },
-                                body: JSON.stringify({
-                                    create_subscription: true,
-                                    service_id: 1
-                                }) // Teszt service_id = 1
-                            })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.session_id) {
-                                    stripe.redirectToCheckout({
-                                        sessionId: data.session_id
-                                    });
-                                } else {
-                                    showMessage("Hiba az előfizetés létrehozásakor", "danger");
-                                }
-                            })
-                            .catch(error => showMessage("Hiba: " + error.message, "danger"));
-                    });
+                    // Ellenőrizzük, hogy létezik-e a gomb, mielőtt eseménykezelőt adunk hozzá
+                    const newSubscriptionBtn = document.getElementById("new-subscription-btn");
+                    if (newSubscriptionBtn) {
+                        newSubscriptionBtn.addEventListener("click", function(e) {
+                            e.preventDefault(); // Megakadályozzuk az alapértelmezett link működést
+                            fetch("../api/profile.php", {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json"
+                                    },
+                                    body: JSON.stringify({
+                                        create_subscription: true,
+                                        service_id: 1 // Teszt célból fix service_id, ezt később dinamikusan kell kezelni
+                                    })
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.session_id) {
+                                        stripe.redirectToCheckout({
+                                            sessionId: data.session_id
+                                        });
+                                    } else {
+                                        showMessage("Hiba az előfizetés létrehozásakor", "danger");
+                                    }
+                                })
+                                .catch(error => showMessage("Hiba: " + error.message, "danger"));
+                        });
+                    } else {
+                        console.warn("A 'new-subscription-btn' elem nem található a DOM-ban.");
+                    }
                 })
                 .catch(error => {
                     console.error("Fetch error:", error);
                     showMessage("Hiba történt az adatok betöltésekor: " + error.message, "danger");
                 });
         });
-
         document.getElementById("profile-form").addEventListener("submit", function(e) {
             e.preventDefault();
             if (!this.checkValidity()) return;

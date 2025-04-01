@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Már 31. 10:44
+-- Létrehozás ideje: 2025. Ápr 01. 16:29
 -- Kiszolgáló verziója: 10.4.32-MariaDB
 -- PHP verzió: 8.2.12
 
@@ -470,7 +470,7 @@ CREATE TABLE `subscriptions` (
   `service_id` bigint(20) UNSIGNED NOT NULL,
   `start_date` timestamp NOT NULL DEFAULT current_timestamp(),
   `end_date` timestamp NULL DEFAULT NULL,
-  `status` enum('active','cancelled') DEFAULT 'active'
+  `status` enum('active','cancelled') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -478,8 +478,8 @@ CREATE TABLE `subscriptions` (
 --
 
 INSERT INTO `subscriptions` (`id`, `user_id`, `service_id`, `start_date`, `end_date`, `status`) VALUES
-(108, 108, 3, '2025-03-26 10:09:42', NULL, ''),
-(132, 106, 4, '2025-03-31 08:39:12', NULL, '');
+(108, 108, 3, '2025-03-26 10:09:42', NULL, 'active'),
+(132, 106, 4, '2025-03-31 08:39:12', NULL, 'active');
 
 -- --------------------------------------------------------
 
@@ -803,7 +803,7 @@ ALTER TABLE `service_users`
 -- AUTO_INCREMENT a táblához `subscriptions`
 --
 ALTER TABLE `subscriptions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=134;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=138;
 
 --
 -- AUTO_INCREMENT a táblához `users`
