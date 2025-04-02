@@ -2,8 +2,8 @@
 require_once '../vendor/autoload.php';
 require_once '../includes/config.php';
 
-\Stripe\Stripe::setApiKey('sk_test_51R5NbyHUv7jEVnHmYVlHmBjKx6mbmqQtxWkqEKOp06JvQdAK4jx0IfGnhZdll4zKA3ee4knG1HWC3DJFmYTioA1D006q3pwsbW');
-$endpoint_secret = 'whsec_d71638c96a47948161f9bf73524247cab08a05f485bd94b1cd9a962c83ebcf8f';
+\Stripe\Stripe::setApiKey('asd');
+$endpoint_secret = 'asd';
 
 function logMessage($message)
 {
