@@ -392,16 +392,22 @@ ob_end_flush();
                     })
                 })
                 .then(response => {
-                    if (!response.ok) throw new Error(`HTTP hiba: ${response.status}`);
+                    if (!response.ok) {
+                        return response.json().then(errData => {
+                            throw new Error(`HTTP hiba: ${response.status} - ${errData.error || 'Ismeretlen hiba'}`);
+                        });
+                    }
                     return response.json();
                 })
                 .then(data => {
                     showMessage(data.message || data.error, data.message ? "success" : "danger");
                     if (data.message) location.reload();
                 })
-                .catch(error => showMessage("Hiba: " + error.message, "danger"));
+                .catch(error => {
+                    console.error("DELETE kérés hibája:", error);
+                    showMessage("Hiba: " + error.message, "danger");
+                });
         });
-
         document.getElementById("password-form").addEventListener("submit", function(e) {
             e.preventDefault();
             if (!this.checkValidity()) return;

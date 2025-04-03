@@ -3,7 +3,7 @@ require_once '../vendor/autoload.php';
 require_once '../includes/config.php';
 
 \Stripe\Stripe::setApiKey('asd');
-$endpoint_secret = 'asd';
+$endpoint_secret = 'ads';
 
 function logMessage($message)
 {
@@ -91,7 +91,7 @@ if ($event->type === 'checkout.session.completed') {
         if (!$stmt) {
             throw new Exception("SQL prepare failed (subscriptions): " . $conn->error);
         }
-        $stmt->bind_param("ii", $user_id, $service_id);
+        $stmt->bind_param( "ii",$user_id, $service_id);
         $stmt->execute();
         $subscription_id = $conn->insert_id;
         logMessage("Success: New subscription $subscription_id created");
@@ -104,7 +104,7 @@ if ($event->type === 'checkout.session.completed') {
         if (!$stmt) {
             throw new Exception("SQL prepare failed (payment): " . $conn->error);
         }
-        $stmt->bind_param("iisd", $user_id, $service_id, $payment_intent_id, $amount);
+        $stmt->bind_param( "iisd",$user_id, $service_id, $payment_intent_id, $amount);
         $stmt->execute();
         $payment_id = $conn->insert_id;
         logMessage("Success: New payment $payment_id recorded with amount $amount");

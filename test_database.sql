@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Ápr 01. 23:01
+-- Létrehozás ideje: 2025. Ápr 03. 09:34
 -- Kiszolgáló verziója: 10.4.32-MariaDB
 -- PHP verzió: 8.2.12
 
@@ -370,9 +370,9 @@ CREATE TABLE `password_reset_tokens` (
 --
 
 CREATE TABLE `payment` (
-  `id` bigint(20) NOT NULL,
-  `user_id` bigint(20) NOT NULL,
-  `service_id` bigint(20) NOT NULL,
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `user_id` bigint(20) UNSIGNED NOT NULL,
+  `service_id` bigint(20) UNSIGNED NOT NULL,
   `payment_intent_id` varchar(255) NOT NULL,
   `amount` decimal(10,0) NOT NULL,
   `currency` varchar(3) NOT NULL,
@@ -384,7 +384,10 @@ CREATE TABLE `payment` (
 --
 
 INSERT INTO `payment` (`id`, `user_id`, `service_id`, `payment_intent_id`, `amount`, `currency`, `payment_date`) VALUES
-(0, 106, 6, 'pi_3R9Bu6HUv7jEVnHm1H1GDugk', 36600, '', '2025-04-01 22:59:32');
+(1, 106, 6, 'pi_3R9Bu6HUv7jEVnHm1H1GDugk', 36600, '', '2025-04-01 22:59:32'),
+(2, 106, 3, 'pi_3R9i2iHUv7jEVnHm1kGGA0pa', 48000, '', '2025-04-03 09:18:29'),
+(3, 108, 4, 'pi_3R9i4IHUv7jEVnHm0AMhO0Ew', 15000, '', '2025-04-03 09:20:08'),
+(4, 108, 5, 'pi_3R9iEaHUv7jEVnHm1bTyUfNa', 40000, '', '2025-04-03 09:30:46');
 
 -- --------------------------------------------------------
 
@@ -501,9 +504,8 @@ CREATE TABLE `subscriptions` (
 --
 
 INSERT INTO `subscriptions` (`id`, `user_id`, `service_id`, `start_date`, `end_date`, `status`) VALUES
-(108, 108, 3, '2025-03-26 10:09:42', NULL, 'active'),
-(132, 106, 4, '2025-03-31 08:39:12', NULL, 'active'),
-(142, 106, 6, '2025-04-01 20:59:32', NULL, 'active');
+(145, 106, 3, '2025-04-03 07:18:29', NULL, 'active'),
+(147, 108, 5, '2025-04-03 07:30:46', NULL, 'active');
 
 -- --------------------------------------------------------
 
@@ -631,7 +633,7 @@ INSERT INTO `users` (`id`, `name`, `username`, `email`, `role`, `email_verified_
 (100, 'Mrs. Brooke Beier V', 'zboncak.alessandro', 'merritt41@example.com', 'user', '2025-02-25 15:18:48', '$2y$12$G5HgiiilYqaMdvbV5ZUPLetbrxq5F8RwljjBH3VuTy8zg5uf1kLb.', 'iUqxtJdGPe', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (102, 'kis andras', 'asdasd', 'andras@jedlik.eu', 'user', NULL, '$2y$10$jss4mJeZeumuxN46mE6qteGwdb2XJ2oq0QsrVAIO7ANaQa8.6BlUy', NULL, NULL, NULL),
 (103, 'kalap tamás', 'Kalapos', 'kalap@asd.hu', 'user', NULL, '$2y$10$/nrCeqHNM.zgYD0/No0T1eStHU.YnIIN.mmD..IFNbuESOiOXQ9oO', NULL, NULL, NULL),
-(106, 'Tac András', 'TicTac', 'tictac@jedlik.hu', 'admin', NULL, '$2y$10$wYqjESQ793BG1QnUk.EGi.YzqDy3ybK534KxuOaMn2.dGP7HU0eke', NULL, NULL, NULL),
+(106, 'Tac András', 'ZigZag', 'tictac@jedlik.hu', 'admin', NULL, '$2y$10$wYqjESQ793BG1QnUk.EGi.YzqDy3ybK534KxuOaMn2.dGP7HU0eke', NULL, NULL, NULL),
 (107, 'Kala Pál', 'kalap', 'kala@gamil.com', 'user', NULL, '$2y$10$4So5HV/woIrefXFOC75bnuJjzYNXOkzs72v8xB0v5iLF3K7n/1GJ2', NULL, NULL, NULL),
 (108, 'Kis Pista', 'Pifta', 'Pistike@gmail.com', 'user', NULL, '$2y$10$9mhHAae1HoM44PQolW0Rvez.HlWAPC.gcGEch7YP9QUIIy3KcO.sa', NULL, NULL, NULL),
 (109, 'Lézer János', 'Lézer Jani', 'lezerjani@gamil.com', 'user', NULL, '$2y$10$Tk4nI8U4IkABXkCawmdO1evL.VL59HZkh9Q0FthqcNA8kHtg5y6fe', NULL, NULL, NULL);
@@ -814,6 +816,12 @@ ALTER TABLE `newsletters`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
+-- AUTO_INCREMENT a táblához `payment`
+--
+ALTER TABLE `payment`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
 -- AUTO_INCREMENT a táblához `personal_acces_token`
 --
 ALTER TABLE `personal_acces_token`
@@ -835,7 +843,7 @@ ALTER TABLE `service_users`
 -- AUTO_INCREMENT a táblához `subscriptions`
 --
 ALTER TABLE `subscriptions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=143;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=148;
 
 --
 -- AUTO_INCREMENT a táblához `users`
@@ -865,6 +873,13 @@ ALTER TABLE `clients`
 --
 ALTER TABLE `newsletters`
   ADD CONSTRAINT `newsletters_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`);
+
+--
+-- Megkötések a táblához `payment`
+--
+ALTER TABLE `payment`
+  ADD CONSTRAINT `FK_payment_services_id` FOREIGN KEY (`service_id`) REFERENCES `services` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  ADD CONSTRAINT `FK_payment_users_id` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
 
 --
 -- Megkötések a táblához `service_users`

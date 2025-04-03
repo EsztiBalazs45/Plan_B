@@ -68,7 +68,6 @@ switch ($method) {
         echo json_encode(['user' => $user, 'subscriptions' => $subscriptions]);
         break;
 
-    // A többi ág (POST, DELETE, PUT) változatlan maradhat
     case 'POST':
         $data = json_decode(file_get_contents("php://input"), true);
         if (isset($data['create_subscription'])) {
@@ -143,10 +142,16 @@ switch ($method) {
 
     case 'DELETE':
         $data = json_decode(file_get_contents("php://input"), true);
+        if (!isset($data['subscription_id']) || !is_numeric($data['subscription_id'])) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Hiányzó vagy érvénytelen subscription_id']);
+            exit;
+        }
         $subscription_id = (int)$data['subscription_id'];
 
         $conn->begin_transaction();
         try {
+            // Ellenőrizzük, hogy az előfizetés létezik-e és a felhasználóhoz tartozik-e
             $stmt = $conn->prepare("SELECT COUNT(*) FROM subscriptions WHERE id = ? AND user_id = ?");
             $stmt->bind_param("ii", $subscription_id, $user_id);
             $stmt->execute();
@@ -156,21 +161,42 @@ switch ($method) {
             }
             $stmt->close();
 
-            $stmt = $conn->prepare("UPDATE subscriptions SET status = 'cancelled' WHERE id = ? AND user_id = ?");
+            // Lekérjük a Stripe előfizetés azonosítóját
+            $stmt = $conn->prepare("SELECT service_id FROM subscriptions WHERE id = ?");
+            $stmt->bind_param("i", $subscription_id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $subscription = $result->fetch_assoc();
+            $stmt->close();
+
+            // Ha van Stripe előfizetés, töröljük
+            if (!empty($subscription['stripe_subscription_id'])) {
+                try {
+                    $stripe_subscription = \Stripe\Subscription::retrieve($subscription['stripe_subscription_id']);
+                    $stripe_subscription->cancel();
+                } catch (\Stripe\Exception\ApiErrorException $e) {
+                    throw new Exception("Stripe hiba: " . $e->getMessage());
+                }
+            }
+
+            // Töröljük az előfizetést az adatbázisból
+            $stmt = $conn->prepare("DELETE FROM subscriptions WHERE id = ? AND user_id = ?");
             $stmt->bind_param("ii", $subscription_id, $user_id);
             $stmt->execute();
+            if ($stmt->affected_rows === 0) {
+                throw new Exception("Nem sikerült törölni az előfizetést az adatbázisból!");
+            }
             $stmt->close();
 
             $conn->commit();
             http_response_code(200);
-            echo json_encode(['message' => 'Előfizetés sikeresen lemondva!']);
+            echo json_encode(['message' => 'Előfizetés sikeresen törölve!']);
         } catch (Exception $e) {
             $conn->rollback();
             http_response_code(500);
             echo json_encode(['error' => 'Hiba történt: ' . $e->getMessage()]);
         }
         break;
-
     case 'PUT':
         $data = json_decode(file_get_contents("php://input"), true);
         $name = htmlspecialchars($data['name']);
@@ -218,4 +244,3 @@ switch ($method) {
 
 $conn->close();
 exit;
-?>

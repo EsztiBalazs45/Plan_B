@@ -1,0 +1,48 @@
+Webhook started - 2025-04-03 09:30:45
+Payload received: {
+  "id": "evt_3R9iEaHUv7jEVnHm10LjNGYE",
+  "object": "event",
+  "api_version": "2025-02-24.acacia",...
+Signature header: t=1743665445,v1=937c447c497ec1690d83ec4e539f4e83fcb1db52072580bf6a377e54204d5f81,v0=9a9b36d6a36acf43310e6bb8e3e8b32f8c2c8fe92ffe427cb96ea56d6c4d819f
+Webhook started - 2025-04-03 09:30:45
+Payload received: {
+  "id": "evt_3R9iEaHUv7jEVnHm1MNvcq3U",
+  "object": "event",
+  "api_version": "2025-02-24.acacia",...
+Signature header: t=1743665445,v1=2abe93cd62471ad39c66fb905a6daac0f143b972b660401c4beacf998a06dbed,v0=ca0b49fc9859c26875fada1e0b947db1891f6c6d600611663d601064e53b2488
+Event constructed: charge.succeeded
+Webhook completed successfully
+Event constructed: payment_intent.succeeded
+Webhook completed successfully
+Webhook started - 2025-04-03 09:30:46
+Payload received: {
+  "id": "evt_1R9iEbHUv7jEVnHmyIu5wayH",
+  "object": "event",
+  "api_version": "2025-02-24.acacia",...
+Signature header: t=1743665445,v1=3f3fefd766b49fa2b9466fb46f8eeb552dacdae81fa77d65b30e56546e841a6b,v0=51e8fe0de463504335c4ee6ace96ac909e042b1a24796ca5f872c34aaf8f1669
+Event constructed: checkout.session.completed
+Client reference ID: 108|5
+Parsed user_id: 108, service_id: 5
+Database connected
+Service price retrieved: 40000
+Success: New subscription 147 created
+Success: New payment 4 recorded with amount 40000
+Transaction committed
+Database connection closed
+Webhook completed successfully
+Webhook started - 2025-04-03 09:30:46
+Payload received: {
+  "id": "evt_3R9iEaHUv7jEVnHm1VP2upcP",
+  "object": "event",
+  "api_version": "2025-02-24.acacia",...
+Signature header: t=1743665445,v1=7e020f1edc0cc10a08b89f0b5aeef118dbcb4ebfde86b98b361878f41b1d60b9,v0=3d4a242e11ee881b760b4747dce30df125089b87e9367917b75f7bcfbb9e5cde
+Event constructed: payment_intent.created
+Webhook completed successfully
+Webhook started - 2025-04-03 09:30:48
+Payload received: {
+  "id": "evt_3R9iEaHUv7jEVnHm1fsliDvA",
+  "object": "event",
+  "api_version": "2025-02-24.acacia",...
+Signature header: t=1743665448,v1=4a61d9d91bed00de1b65e9d117632589681ba0ab812a02a3b27c8f7ce3404221,v0=dfaafd94255746fd9eff69319192e00af9b31df568f9a4845c663236d470667d
+Event constructed: charge.updated
+Webhook completed successfully
