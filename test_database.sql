@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Ápr 03. 09:34
+-- Létrehozás ideje: 2025. Ápr 06. 16:30
 -- Kiszolgáló verziója: 10.4.32-MariaDB
 -- PHP verzió: 8.2.12
 
@@ -95,7 +95,8 @@ INSERT INTO `appointments` (`id`, `status`, `description`, `user_id`, `title`, `
 (61, 'confirmed', 'asdasdqweqtrqqe', 106, 'asdsadsdad', '2025-03-18 10:00:00', '2025-03-18 10:30:00', 77),
 (62, 'confirmed', 'sadasdasdsadd', 106, 'asdsadadas', '2025-03-19 13:30:00', '2025-03-19 14:00:00', 77),
 (64, 'confirmed', 'asdsadsadasd', 108, 'valami', '2025-03-21 07:00:00', '2025-03-21 07:30:00', 78),
-(65, 'confirmed', 'sadasdadadasdasd', 108, 'asd', '2025-03-26 07:00:00', '2025-03-25 07:30:00', 78);
+(65, 'confirmed', 'sadasdadadasdasd', 108, 'asd', '2025-03-26 07:00:00', '2025-03-25 07:30:00', 78),
+(66, 'confirmed', 'asdadasdasdasddsa', 108, 'Megbeszélés', '2025-04-09 07:00:00', '2025-04-09 07:30:00', 78);
 
 -- --------------------------------------------------------
 
@@ -387,7 +388,9 @@ INSERT INTO `payment` (`id`, `user_id`, `service_id`, `payment_intent_id`, `amou
 (1, 106, 6, 'pi_3R9Bu6HUv7jEVnHm1H1GDugk', 36600, '', '2025-04-01 22:59:32'),
 (2, 106, 3, 'pi_3R9i2iHUv7jEVnHm1kGGA0pa', 48000, '', '2025-04-03 09:18:29'),
 (3, 108, 4, 'pi_3R9i4IHUv7jEVnHm0AMhO0Ew', 15000, '', '2025-04-03 09:20:08'),
-(4, 108, 5, 'pi_3R9iEaHUv7jEVnHm1bTyUfNa', 40000, '', '2025-04-03 09:30:46');
+(4, 108, 5, 'pi_3R9iEaHUv7jEVnHm1bTyUfNa', 40000, '', '2025-04-03 09:30:46'),
+(5, 106, 7, 'pi_3RAttYHUv7jEVnHm1ik7aOBQ', 78000, '', '2025-04-06 16:10:00'),
+(6, 106, 4, 'pi_3RAuCQHUv7jEVnHm1gRpxNnX', 15000, '', '2025-04-06 16:29:29');
 
 -- --------------------------------------------------------
 
@@ -504,8 +507,9 @@ CREATE TABLE `subscriptions` (
 --
 
 INSERT INTO `subscriptions` (`id`, `user_id`, `service_id`, `start_date`, `end_date`, `status`) VALUES
-(145, 106, 3, '2025-04-03 07:18:29', NULL, 'active'),
-(147, 108, 5, '2025-04-03 07:30:46', NULL, 'active');
+(147, 108, 5, '2025-04-03 07:30:46', NULL, 'active'),
+(148, 106, 7, '2025-04-06 14:10:00', NULL, 'active'),
+(149, 106, 4, '2025-04-06 14:29:29', NULL, 'active');
 
 -- --------------------------------------------------------
 
@@ -789,7 +793,7 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT a táblához `appointments`
 --
 ALTER TABLE `appointments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
 
 --
 -- AUTO_INCREMENT a táblához `clients`
@@ -819,7 +823,7 @@ ALTER TABLE `newsletters`
 -- AUTO_INCREMENT a táblához `payment`
 --
 ALTER TABLE `payment`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT a táblához `personal_acces_token`
@@ -843,7 +847,7 @@ ALTER TABLE `service_users`
 -- AUTO_INCREMENT a táblához `subscriptions`
 --
 ALTER TABLE `subscriptions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=148;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=150;
 
 --
 -- AUTO_INCREMENT a táblához `users`

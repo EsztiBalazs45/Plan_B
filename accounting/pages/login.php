@@ -1,82 +1,16 @@
 <?php
-// Session indítása
 session_start();
+require_once '../includes/config.php';
+require_once '../includes/header.php';
 
 // CSRF token generálása, ha még nem létezik
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
-require_once '../includes/config.php';
-require_once '../includes/header.php';
-
 if (isLoggedIn()) {
     header('Location: /Bozont_cucc/accounting/index.php');
     exit();
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // CSRF token ellenőrzése
-    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-        $_SESSION['error'] = 'Érvénytelen kérés!';
-        header('Location: login.php');
-        exit();
-    }
-
-    // Kötelező mezők ellenőrzése
-    $email = $_POST['email'];
-    $password = $_POST['password'];
-
-    if (empty($email) || empty($password)) {
-        $_SESSION['error'] = 'Minden mező kitöltése kötelező!';
-        header('Location: login.php');
-        exit();
-    }
-
-    // Email formátum ellenőrzése
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $_SESSION['error'] = 'Érvénytelen email cím!';
-        header('Location: login.php');
-        exit();
-    }
-
-    // Jelszó hossz ellenőrzése
-    if (strlen($password) < 8) {
-        $_SESSION['error'] = 'A jelszónak legalább 8 karakter hosszúnak kell lennie!';
-        header('Location: login.php');
-        exit();
-    }
-
-    try {
-        $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
-        $stmt->execute([$email]);
-        $user = $stmt->fetch();
-
-        if ($user && password_verify($password, $user['password'])) {
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['user_name'] = $user['name'];
-            $_SESSION['user_email'] = $user['email'];
-
-            debug([
-                'login_success' => true,
-                'user_id' => $user['id'],
-                'user_name' => $user['name']
-            ]);
-
-            $_SESSION['success'] = 'Sikeres bejelentkezés!';
-            header('Location: /Bozont_cucc/accounting/index.php');
-            exit();
-        } else {
-            $_SESSION['error'] = 'Hibás email cím vagy jelszó!';
-            header('Location: login.php');
-            exit();
-        }
-    } catch (PDOException $e) {
-        error_log("Login error: " . $e->getMessage());
-        $_SESSION['error'] = 'Adatbázis hiba történt!';
-        header('Location: login.php');
-        exit();
-    }
 }
 ?>
 
@@ -104,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             justify-content: center;
             align-items: center;
             width: 100%;
-            max-width: 1200px; /* Nagyobb maximális szélesség */
+            max-width: 1200px;
         }
         .card {
             border: none;
@@ -113,7 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background: #ffffff;
             animation: fadeInUp 0.5s ease-out;
             overflow: hidden;
-            max-width: 700px; /* Nagyobb szélesség */
+            max-width: 700px;
             width: 100%;
         }
         .card-header {
@@ -123,37 +57,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             padding: 2rem;
             text-align: center;
             font-weight: 600;
-            font-size: 2rem; /* Nagyobb fejléc betűméret */
+            font-size: 2rem;
             text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
         }
         .card-body {
-            padding: 3rem; /* Nagyobb belső padding */
+            padding: 3rem;
         }
         .form-label {
             color: #1e293b;
             font-weight: 500;
-            font-size: 1.2rem; /* Nagyobb címke betűméret */
+            font-size: 1.2rem;
         }
         .form-control {
             border-radius: 50px;
-            padding: 1rem 2rem; /* Nagyobb padding */
+            padding: 1rem 2rem;
             border: 1px solid #d1d5db;
             transition: all 0.3s ease;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-            font-size: 1.1rem; /* Nagyobb betűméret */
+            font-size: 1.1rem;
         }
         .form-control:focus {
             border-color: #3b82f6;
             box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
-            outline: none;
+            outline:なし;
         }
         .btn-primary {
             background: linear-gradient(135deg, #3b82f6, #1e40af);
             border: none;
             border-radius: 50px;
-            padding: 1rem 2rem; /* Nagyobb gomb */
+            padding: 1rem 2rem;
             font-weight: 500;
-            font-size: 1.2rem; /* Nagyobb betűméret */
+            font-size: 1.2rem;
             transition: all 0.3s ease;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
         }
@@ -167,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             padding: 1.5rem;
             margin-bottom: 2rem;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            font-size: 1.1rem; /* Nagyobb betűméret */
+            font-size: 1.1rem;
             text-align: center;
         }
         .alert-danger {
@@ -184,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             color: #3b82f6;
             text-decoration: none;
             font-weight: 500;
-            font-size: 1.1rem; /* Nagyobb betűméret */
+            font-size: 1.1rem;
             transition: color 0.3s ease;
         }
         .text-center a:hover {
@@ -192,14 +126,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             text-decoration: underline;
         }
         .invalid-feedback {
-            font-size: 0.95rem; /* Nagyobb betűméret */
+            font-size: 0.95rem;
             color: #b91c1c;
             margin-top: 0.5rem;
             text-align: center;
         }
         @media (max-width: 768px) {
             .card {
-                max-width: 90%; /* Reszponzív szélesség */
+                max-width: 90%;
             }
             .card-body {
                 padding: 2rem;
@@ -239,27 +173,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 Bejelentkezés
             </div>
             <div class="card-body">
-                <!-- Hibák megjelenítése -->
-                <?php if (isset($_SESSION['error'])): ?>
-                    <div class="alert alert-danger"><?= htmlspecialchars($_SESSION['error']); ?></div>
-                    <?php unset($_SESSION['error']); ?>
-                <?php endif; ?>
+                <div id="message-container"></div>
 
-                <!-- Sikeres üzenet megjelenítése -->
-                <?php if (isset($_SESSION['success'])): ?>
-                    <div class="alert alert-success"><?= htmlspecialchars($_SESSION['success']); ?></div>
-                    <?php unset($_SESSION['success']); ?>
-                <?php endif; ?>
-
-                <form method="POST" action="" class="needs-validation" novalidate>
-                    <!-- CSRF token -->
+                <form id="login-form" class="needs-validation" novalidate>
                     <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
 
-                    <!-- Űrlap mezők -->
                     <div class="mb-4">
                         <label for="email" class="form-label">Email cím</label>
-                        <input type="email" class="form-control" id="email" name="email" required
-                               value="<?= isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '' ?>">
+                        <input type="email" class="form-control" id="email" name="email" required>
                         <div class="invalid-feedback">Kérjük, adjon meg egy érvényes email címet!</div>
                     </div>
 
@@ -281,7 +202,53 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Bootstrap űrlap validáció
+        document.getElementById('login-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            if (!this.checkValidity()) {
+                e.stopPropagation();
+                this.classList.add('was-validated');
+                return;
+            }
+
+            const formData = {
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                csrf_token: document.querySelector('input[name="csrf_token"]').value
+            };
+
+            fetch('../api/login.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP hiba: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                const messageContainer = document.getElementById('message-container');
+                if (data.success) {
+                    messageContainer.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+                    setTimeout(() => {
+                        window.location.href = '/Bozont_cucc/accounting/index.php';
+                    }, 1000);
+                } else {
+                    messageContainer.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+                }
+            })
+            .catch(error => {
+                console.error('Hiba:', error);
+                document.getElementById('message-container').innerHTML =
+                    `<div class="alert alert-danger">Hiba történt: ${error.message}</div>`;
+            });
+        });
+
+        // Bootstrap validáció
         (function () {
             'use strict';
             var forms = document.querySelectorAll('.needs-validation');

@@ -46,3 +46,99 @@ Payload received: {
 Signature header: t=1743665448,v1=4a61d9d91bed00de1b65e9d117632589681ba0ab812a02a3b27c8f7ce3404221,v0=dfaafd94255746fd9eff69319192e00af9b31df568f9a4845c663236d470667d
 Event constructed: charge.updated
 Webhook completed successfully
+Webhook started - 2025-04-06 16:10:00
+Payload received: {
+  "id": "evt_3RAttYHUv7jEVnHm1NOp5EdL",
+  "object": "event",
+  "api_version": "2025-02-24.acacia",...
+Signature header: t=1743948597,v1=5b0ed83bcfa3fb75d5cb118c7fce7c98f1a243c02ec4a6d5ae88bb533290ce24,v0=485205a490b12043233afdaf2c390bd6338aeb1b36d12343c25dd3f842ab5aec
+Event constructed: charge.succeeded
+Webhook completed successfully
+Webhook started - 2025-04-06 16:10:00
+Payload received: {
+  "id": "evt_3RAttYHUv7jEVnHm1YO9DFyw",
+  "object": "event",
+  "api_version": "2025-02-24.acacia",...
+Signature header: t=1743948597,v1=ca0ed8dc1bc72e5bc02ff71a4b19b7d59b1bee0870ee097450030326b156bb33,v0=156d5d04e6d928674ee064d842d887c74a123b3eb03d6b0225e2f65b54edab20
+Event constructed: payment_intent.succeeded
+Webhook completed successfully
+Webhook started - 2025-04-06 16:10:00
+Payload received: {
+  "id": "evt_1RAttZHUv7jEVnHmwdUIsVEj",
+  "object": "event",
+  "api_version": "2025-02-24.acacia",...
+Signature header: t=1743948598,v1=770a5fed82a141ef3a006edba0cca996f102504c2064b763613050d4b56ded89,v0=fd7f341d0f87ca366e5cb013158c66b6fa145cd042951616c744bb531c173d77
+Event constructed: checkout.session.completed
+Client reference ID: 106|7
+Parsed user_id: 106, service_id: 7
+Database connected
+Service price retrieved: 78000
+Success: New subscription 148 created
+Success: New payment 5 recorded with amount 78000
+Transaction committed
+Database connection closed
+Webhook completed successfully
+Webhook started - 2025-04-06 16:10:00
+Payload received: {
+  "id": "evt_3RAttYHUv7jEVnHm170lJ5h0",
+  "object": "event",
+  "api_version": "2025-02-24.acacia",...
+Signature header: t=1743948598,v1=0de88743875b125e84265784fe2585da838ca5839166464b8db374a0f5124e11,v0=011d9a0de1f2fb2c8fdb5db879b093885dc97cd4b4917a5419c05ced03a1fb1d
+Event constructed: payment_intent.created
+Webhook completed successfully
+Webhook started - 2025-04-06 16:10:02
+Payload received: {
+  "id": "evt_3RAttYHUv7jEVnHm1ZM9sSkz",
+  "object": "event",
+  "api_version": "2025-02-24.acacia",...
+Signature header: t=1743948600,v1=c467a87190e04fec0052de019af7f647c27dcc4f8fac2271d885c0d9164f729e,v0=c4cf028555c850353955d10c21affc3df26f7bbf42cc1ee1912390df83bb9d76
+Event constructed: charge.updated
+Webhook completed successfully
+Webhook started - 2025-04-06 16:29:29
+Payload received: {
+  "id": "evt_3RAuCQHUv7jEVnHm1iOubTOC",
+  "object": "event",
+  "api_version": "2025-02-24.acacia",...
+Signature header: t=1743949767,v1=8f40d46c2d0d7b661c079e22ce175e2aa8adeec9a12f643df80f8b096fcb6640,v0=7285e214d7bd4c777c49e1084440d53d5629eba5d4a96deba1aec2b8c28a120f
+Event constructed: charge.succeeded
+Webhook completed successfully
+Webhook started - 2025-04-06 16:29:29
+Payload received: {
+  "id": "evt_3RAuCQHUv7jEVnHm1ULixs6B",
+  "object": "event",
+  "api_version": "2025-02-24.acacia",...
+Signature header: t=1743949767,v1=568baf17e7969168adca98b2e62004f62dc4c338d84ea5c0db70fb3c1b086444,v0=2d6a0e8432bed699042d00059e51aec03bdbc57c3d80eb3998d13c0ac75804ea
+Event constructed: payment_intent.succeeded
+Webhook completed successfully
+Webhook started - 2025-04-06 16:29:29
+Payload received: {
+  "id": "evt_1RAuCRHUv7jEVnHm1A2UQfQ8",
+  "object": "event",
+  "api_version": "2025-02-24.acacia",...
+Signature header: t=1743949767,v1=74a0cf35c1eda0b16a2d990e2b0957341ba83f9b365720fa20ef1fc7aedf85e7,v0=73056fb8b095dce86d7dc5c6653b35f5426320ee9acd1b6bf016c62ffcfb92b6
+Event constructed: checkout.session.completed
+Client reference ID: 106|4
+Parsed user_id: 106, service_id: 4
+Database connected
+Service price retrieved: 15000
+Success: New subscription 149 created
+Success: New payment 6 recorded with amount 15000
+Transaction committed
+Database connection closed
+Webhook completed successfully
+Webhook started - 2025-04-06 16:29:30
+Payload received: {
+  "id": "evt_3RAuCQHUv7jEVnHm1s4IAG3s",
+  "object": "event",
+  "api_version": "2025-02-24.acacia",...
+Signature header: t=1743949768,v1=fcd65a630100c7e55ca80cae5f455d41223c0d982a2c4aff3e16f1abbd0633a5,v0=01a11a3d1e02b4fea5e5fabeea2f1d555216fd01c79c0d3c97db0a39aadcec0e
+Event constructed: payment_intent.created
+Webhook completed successfully
+Webhook started - 2025-04-06 16:29:31
+Payload received: {
+  "id": "evt_3RAuCQHUv7jEVnHm1ui3j78v",
+  "object": "event",
+  "api_version": "2025-02-24.acacia",...
+Signature header: t=1743949769,v1=47e5364649185e510608670c23bd36aa426e9052c596909b2ab44a3fa9e420d1,v0=159a9beff09d6f5ffd5a030f8ebdd5418e4c853ab5a93e30ce90b5e59766cc54
+Event constructed: charge.updated
+Webhook completed successfully
