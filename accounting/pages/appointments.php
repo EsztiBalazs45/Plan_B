@@ -239,7 +239,7 @@ ob_end_flush();
             window.deleteAppointment = function(id) {
                 if (!confirm('Biztosan törlöd ezt az időpontot?')) return;
 
-                fetch('api.php', {
+                fetch('../api/appointments.php', {
                         method: 'DELETE',
                         headers: {
                             'Content-Type': 'application/json'
@@ -289,7 +289,7 @@ ob_end_flush();
                 window.bookNewSlot = function(start, end) {
                     data.start = start;
                     data.end = end;
-                    fetch('api.php', {
+                    fetch('../api/appointments.php', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
