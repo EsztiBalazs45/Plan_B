@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Ápr 06. 16:30
+-- Létrehozás ideje: 2025. Ápr 16. 12:44
 -- Kiszolgáló verziója: 10.4.32-MariaDB
 -- PHP verzió: 8.2.12
 
@@ -96,7 +96,11 @@ INSERT INTO `appointments` (`id`, `status`, `description`, `user_id`, `title`, `
 (62, 'confirmed', 'sadasdasdsadd', 106, 'asdsadadas', '2025-03-19 13:30:00', '2025-03-19 14:00:00', 77),
 (64, 'confirmed', 'asdsadsadasd', 108, 'valami', '2025-03-21 07:00:00', '2025-03-21 07:30:00', 78),
 (65, 'confirmed', 'sadasdadadasdasd', 108, 'asd', '2025-03-26 07:00:00', '2025-03-25 07:30:00', 78),
-(66, 'confirmed', 'asdadasdasdasddsa', 108, 'Megbeszélés', '2025-04-09 07:00:00', '2025-04-09 07:30:00', 78);
+(66, 'confirmed', 'asdadasdasdasddsa', 108, 'Megbeszélés', '2025-04-09 07:00:00', '2025-04-09 07:30:00', 78),
+(67, 'canceled', 'adadadasdas', 106, 'asdaasdd', '2025-04-10 07:00:00', '2025-04-10 07:30:00', 77),
+(68, 'canceled', 'asdadadasdas', 106, 'valami', '2025-04-11 07:00:00', '2025-04-11 07:30:00', 77),
+(69, 'canceled', 'asdasdad', 106, 'próba', '2025-04-09 10:00:00', '2025-04-09 10:30:00', 77),
+(70, 'confirmed', 'asdasd', 106, 'asdasd', '2025-04-11 10:00:00', '2025-04-11 10:30:00', 77);
 
 -- --------------------------------------------------------
 
@@ -390,7 +394,8 @@ INSERT INTO `payment` (`id`, `user_id`, `service_id`, `payment_intent_id`, `amou
 (3, 108, 4, 'pi_3R9i4IHUv7jEVnHm0AMhO0Ew', 15000, '', '2025-04-03 09:20:08'),
 (4, 108, 5, 'pi_3R9iEaHUv7jEVnHm1bTyUfNa', 40000, '', '2025-04-03 09:30:46'),
 (5, 106, 7, 'pi_3RAttYHUv7jEVnHm1ik7aOBQ', 78000, '', '2025-04-06 16:10:00'),
-(6, 106, 4, 'pi_3RAuCQHUv7jEVnHm1gRpxNnX', 15000, '', '2025-04-06 16:29:29');
+(6, 106, 4, 'pi_3RAuCQHUv7jEVnHm1gRpxNnX', 15000, '', '2025-04-06 16:29:29'),
+(7, 110, 5, 'pi_3RETR6HUv7jEVnHm1E4FW5dF', 40000, '', '2025-04-16 12:43:22');
 
 -- --------------------------------------------------------
 
@@ -509,7 +514,8 @@ CREATE TABLE `subscriptions` (
 INSERT INTO `subscriptions` (`id`, `user_id`, `service_id`, `start_date`, `end_date`, `status`) VALUES
 (147, 108, 5, '2025-04-03 07:30:46', NULL, 'active'),
 (148, 106, 7, '2025-04-06 14:10:00', NULL, 'active'),
-(149, 106, 4, '2025-04-06 14:29:29', NULL, 'active');
+(149, 106, 4, '2025-04-06 14:29:29', NULL, 'active'),
+(150, 110, 5, '2025-04-16 10:43:22', NULL, 'active');
 
 -- --------------------------------------------------------
 
@@ -640,7 +646,8 @@ INSERT INTO `users` (`id`, `name`, `username`, `email`, `role`, `email_verified_
 (106, 'Tac András', 'ZigZag', 'tictac@jedlik.hu', 'admin', NULL, '$2y$10$wYqjESQ793BG1QnUk.EGi.YzqDy3ybK534KxuOaMn2.dGP7HU0eke', NULL, NULL, NULL),
 (107, 'Kala Pál', 'kalap', 'kala@gamil.com', 'user', NULL, '$2y$10$4So5HV/woIrefXFOC75bnuJjzYNXOkzs72v8xB0v5iLF3K7n/1GJ2', NULL, NULL, NULL),
 (108, 'Kis Pista', 'Pifta', 'Pistike@gmail.com', 'user', NULL, '$2y$10$9mhHAae1HoM44PQolW0Rvez.HlWAPC.gcGEch7YP9QUIIy3KcO.sa', NULL, NULL, NULL),
-(109, 'Lézer János', 'Lézer Jani', 'lezerjani@gamil.com', 'user', NULL, '$2y$10$Tk4nI8U4IkABXkCawmdO1evL.VL59HZkh9Q0FthqcNA8kHtg5y6fe', NULL, NULL, NULL);
+(109, 'Lézer János', 'Lézer Jani', 'lezerjani@gamil.com', 'user', NULL, '$2y$10$Tk4nI8U4IkABXkCawmdO1evL.VL59HZkh9Q0FthqcNA8kHtg5y6fe', NULL, NULL, NULL),
+(110, 'Szamarasi Béla', 'VadSzamaras', 'szamaras@jedlik.eu', 'user', NULL, '$2y$10$TPiutylrT4/8nZnCrt66zOCQpbD5pZo8cCslhUXAH2S2jYLlIp4hi', NULL, NULL, NULL);
 
 --
 -- Indexek a kiírt táblákhoz
@@ -793,7 +800,7 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT a táblához `appointments`
 --
 ALTER TABLE `appointments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=71;
 
 --
 -- AUTO_INCREMENT a táblához `clients`
@@ -823,7 +830,7 @@ ALTER TABLE `newsletters`
 -- AUTO_INCREMENT a táblához `payment`
 --
 ALTER TABLE `payment`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT a táblához `personal_acces_token`
@@ -847,13 +854,13 @@ ALTER TABLE `service_users`
 -- AUTO_INCREMENT a táblához `subscriptions`
 --
 ALTER TABLE `subscriptions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=150;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=151;
 
 --
 -- AUTO_INCREMENT a táblához `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=110;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=111;
 
 --
 -- Megkötések a kiírt táblákhoz

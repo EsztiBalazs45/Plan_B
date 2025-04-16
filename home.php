@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="hu">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,11 +11,16 @@
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #1a2e44; /* Sötétkék */
-            --secondary-color: #d4af37; /* Arany */
-            --accent-color: #ffffff; /* Fehér */
-            --text-color: #333333; /* Szürke szöveg */
-            --light-bg: #f5f7fa; /* Világos háttér */
+            --primary-color: #1a2e44;
+            /* Sötétkék */
+            --secondary-color: #d4af37;
+            /* Arany */
+            --accent-color: #ffffff;
+            /* Fehér */
+            --text-color: #333333;
+            /* Szürke szöveg */
+            --light-bg: #f5f7fa;
+            /* Világos háttér */
         }
 
         body {
@@ -27,7 +33,7 @@
         .navbar {
             padding: 1.5rem 0;
             background-color: var(--accent-color);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
             transition: background-color 0.3s ease;
         }
 
@@ -61,7 +67,7 @@
         .btn-primary:hover {
             background-color: #c19b32;
             transform: translateY(-3px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .btn-outline-primary {
@@ -108,13 +114,13 @@
             padding: 2.5rem;
             border-radius: 15px;
             background: var(--accent-color);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
         }
 
         .service-card:hover {
             transform: translateY(-10px);
-            box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
         }
 
         .service-card i {
@@ -135,7 +141,7 @@
 
         .about-section img {
             border-radius: 15px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
         }
 
         /* Testimonials */
@@ -143,7 +149,7 @@
             background: var(--accent-color);
             padding: 2rem;
             border-radius: 15px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
         }
 
         /* Footer */
@@ -184,7 +190,7 @@
                 background: var(--accent-color);
                 padding: 1rem;
                 border-radius: 10px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             }
 
             .hero-section h1 {
@@ -197,6 +203,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg fixed-top">
@@ -296,9 +303,9 @@
     </section>
 
     <!-- Ügyfélvélemények -->
-    <section class="py-5">
-        <div class="container py-5">
-            <h2 class="text-center mb-5" data-aos="fade-up">Ügyfeleink mondták</h2>
+    <section class="py-3">
+        <div class="container py-3">
+            <h2 class="text-center mb-3" data-aos="fade-up">Ügyfeleink mondták</h2>
             <div class="row">
                 <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
                     <div class="testimonial-card">
@@ -307,7 +314,23 @@
                         <p class="small mb-0 text-muted">Pizza futár, Tech Solutions Kft.</p>
                     </div>
                 </div>
-                <!-- További vélemények hozzáadhatók -->
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="testimonial-card">
+                        <p class="mb-3">"Pontos munkavégzés segítőkész csapat. Csak ajánlani tudom!"</p>
+                        <h6 class="mb-1">Fenyvesi Lajos</h6>
+                        <p class="small mb-0 text-muted">Villanyszerelő, Fenyvesvillany Kft.</p>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="testimonial-card">
+                        <p class="mb-3">"Nagyon jó kis csapat mindig mindenben segítenek. Gyorsak pontosak mindenkinek csak ajánlani tudom őket!"</p>
+                        <h6 class="mb-1">Szamarasi Béla</h6>
+                        <p class="small mb-0 text-muted">Pék, Szamaraspékség Kft.</p>
+                    </div>
+                </div>
+
+
+
             </div>
         </div>
     </section>
@@ -334,11 +357,11 @@
                 <div class="col-lg-6" data-aos="fade-left">
                     <h4 class="mb-4">Elérhetőségeink</h4>
                     <p><i class="fas fa-map-marker-alt me-2 text-primary"></i> 9241 Jánossomorja, Kápolna utca 16</p>
-                    <p><i class="fas fa-phone me-2 text-primary"></i> +36 1 234 5678</p>
+                    <p><i class="fas fa-phone me-2 text-primary"></i> +36 30 225 014</p>
                     <p><i class="fas fa-envelope me-2 text-primary"></i> kajarkonyveles@gmail.com</p>
                     <div class="ratio ratio-16x9 mt-4">
-                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2695.6504565904584!2d19.0505!3d47.4983!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDfCsDI5JzUzLjkiTiAxOcKwMDMnMDEuOCJF!5e0!3m2!1shu!2shu!4v1635789245784!5m2!1shu!2shu" 
-                                style="border:0; border-radius: 15px;" allowfullscreen="" loading="lazy"></iframe>
+                        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2695.6504565904584!2d19.0505!3d47.4983!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zNDfCsDI5JzUzLjkiTiAxOcKwMDMnMDEuOCJF!5e0!3m2!1shu!2shu!4v1635789245784!5m2!1shu!2shu"
+                            style="border:0; border-radius: 15px;" allowfullscreen="" loading="lazy"></iframe>
                     </div>
                 </div>
             </div>
@@ -393,7 +416,7 @@
         });
 
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
+            anchor.addEventListener('click', function(e) {
                 e.preventDefault();
                 document.querySelector(this.getAttribute('href')).scrollIntoView({
                     behavior: 'smooth'
@@ -413,4 +436,5 @@
         });
     </script>
 </body>
+
 </html>
