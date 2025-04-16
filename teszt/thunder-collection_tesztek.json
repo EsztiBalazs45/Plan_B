@@ -2,7 +2,7 @@
     "clientName": "Thunder Client",
     "collectionName": "tesztek",
     "collectionId": "f42768ce-cd4c-4544-98b3-a2593a0186c6",
-    "dateExported": "2025-04-09T07:48:46.062Z",
+    "dateExported": "2025-04-16T11:00:23.136Z",
     "version": "1.2",
     "folders": [],
     "requests": [
@@ -28,6 +28,37 @@
                     "type": "Content-Type",
                     "custom": "",
                     "action": "equal",
+                    "value": "application/json"
+                }
+            ]
+        },
+        {
+            "_id": "f15467bb-7d4c-415d-bdbc-9b57d3b6e92e",
+            "colId": "f42768ce-cd4c-4544-98b3-a2593a0186c6",
+            "containerId": "",
+            "name": "get ducoments wrong",
+            "url": "http://localhost/Bozont_cucc/accounting/api/documentes.php",
+            "method": "GET",
+            "sortNum": 15000,
+            "created": "2025-04-07T09:18:39.466Z",
+            "modified": "2025-04-11T10:27:40.758Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n   \"email\": \"tictac@jedlik.hu\",\n    \"password\": \"Password123\",\n    \"csrf_token\":\"Generált token: 53a6cee6fccad928174256fda11eb5f7\"\n}",
+                "form": []
+            },
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "notequal",
+                    "value": "200"
+                },
+                {
+                    "type": "Content-Type",
+                    "custom": "",
+                    "action": "notequal",
                     "value": "application/json"
                 }
             ]
@@ -64,6 +95,37 @@
             ]
         },
         {
+            "_id": "b523e3d7-8488-4c15-a8de-6b7de40492c0",
+            "colId": "f42768ce-cd4c-4544-98b3-a2593a0186c6",
+            "containerId": "",
+            "name": "get teszt clients wrong",
+            "url": "http://localhost/Bozont_cucc/accounting/api/clientis.php",
+            "method": "GET",
+            "sortNum": 25000,
+            "created": "2025-04-07T09:20:11.906Z",
+            "modified": "2025-04-11T10:27:58.501Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n   \"email\": \"tictac@jedlik.hu\",\n    \"password\": \"Password123\",\n    \"csrf_token\":\"53a6cee6fccad928174256fda11eb5f7\"\n}",
+                "form": []
+            },
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "notequal",
+                    "value": "200"
+                },
+                {
+                    "type": "Content-Type",
+                    "custom": "",
+                    "action": "notequal",
+                    "value": "application/json"
+                }
+            ]
+        },
+        {
             "_id": "36c86e7b-d96e-4430-b156-2908302ed1bf",
             "colId": "f42768ce-cd4c-4544-98b3-a2593a0186c6",
             "containerId": "",
@@ -95,19 +157,19 @@
             ]
         },
         {
-            "_id": "b523e3d7-8488-4c15-a8de-6b7de40492c0",
+            "_id": "6515a10a-a2f7-4aef-8fbe-6819930d4d95",
             "colId": "f42768ce-cd4c-4544-98b3-a2593a0186c6",
             "containerId": "",
-            "name": "get teszt clients wrong",
-            "url": "http://localhost/Bozont_cucc/accounting/api/clientis.php",
+            "name": "get teszt statistics",
+            "url": "http://localhost/Bozont_cucc/accounting/api/statistics.php",
             "method": "GET",
-            "sortNum": 30000,
-            "created": "2025-04-07T09:20:11.906Z",
-            "modified": "2025-04-07T09:20:31.785Z",
+            "sortNum": 37500,
+            "created": "2025-04-07T09:17:27.993Z",
+            "modified": "2025-04-07T09:18:36.937Z",
             "headers": [],
             "body": {
                 "type": "json",
-                "raw": "{\n   \"email\": \"tictac@jedlik.hu\",\n    \"password\": \"Password123\",\n    \"csrf_token\":\"53a6cee6fccad928174256fda11eb5f7\"\n}",
+                "raw": "{\n   \"email\": \"tictac@jedlik.hu\",\n    \"password\": \"Password123\",\n    \"csrf_token\":\"Generált token: 53a6cee6fccad928174256fda11eb5f7\"\n}",
                 "form": []
             },
             "tests": [
@@ -121,6 +183,37 @@
                     "type": "Content-Type",
                     "custom": "",
                     "action": "equal",
+                    "value": "application/json"
+                }
+            ]
+        },
+        {
+            "_id": "3f8318b9-646d-4ff4-b6d0-8e5876825a31",
+            "colId": "f42768ce-cd4c-4544-98b3-a2593a0186c6",
+            "containerId": "",
+            "name": "get teszt statistics wrong",
+            "url": "http://localhost/Bozont_cucc/accounting/api/statistitcs.php",
+            "method": "GET",
+            "sortNum": 38750,
+            "created": "2025-04-07T09:21:11.519Z",
+            "modified": "2025-04-11T10:28:18.138Z",
+            "headers": [],
+            "body": {
+                "type": "json",
+                "raw": "{\n   \"email\": \"tictac@jedlik.hu\",\n    \"password\": \"Password123\",\n    \"csrf_token\":\"Generált token: 53a6cee6fccad928174256fda11eb5f7\"\n}",
+                "form": []
+            },
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "notequal",
+                    "value": "200"
+                },
+                {
+                    "type": "Content-Type",
+                    "custom": "",
+                    "action": "notequal",
                     "value": "application/json"
                 }
             ]
@@ -157,37 +250,6 @@
             ]
         },
         {
-            "_id": "6515a10a-a2f7-4aef-8fbe-6819930d4d95",
-            "colId": "f42768ce-cd4c-4544-98b3-a2593a0186c6",
-            "containerId": "",
-            "name": "get teszt statistics",
-            "url": "http://localhost/Bozont_cucc/accounting/api/statistics.php",
-            "method": "GET",
-            "sortNum": 50000,
-            "created": "2025-04-07T09:17:27.993Z",
-            "modified": "2025-04-07T09:18:36.937Z",
-            "headers": [],
-            "body": {
-                "type": "json",
-                "raw": "{\n   \"email\": \"tictac@jedlik.hu\",\n    \"password\": \"Password123\",\n    \"csrf_token\":\"Generált token: 53a6cee6fccad928174256fda11eb5f7\"\n}",
-                "form": []
-            },
-            "tests": [
-                {
-                    "type": "res-code",
-                    "custom": "",
-                    "action": "equal",
-                    "value": "200"
-                },
-                {
-                    "type": "Content-Type",
-                    "custom": "",
-                    "action": "equal",
-                    "value": "application/json"
-                }
-            ]
-        },
-        {
             "_id": "1b3f2648-30ea-481b-a1e3-87c385623b17",
             "colId": "f42768ce-cd4c-4544-98b3-a2593a0186c6",
             "containerId": "",
@@ -196,7 +258,7 @@
             "method": "GET",
             "sortNum": 50000,
             "created": "2025-04-07T09:20:55.266Z",
-            "modified": "2025-04-07T09:21:07.536Z",
+            "modified": "2025-04-11T10:28:09.100Z",
             "headers": [],
             "body": {
                 "type": "json",
@@ -207,75 +269,13 @@
                 {
                     "type": "res-code",
                     "custom": "",
-                    "action": "equal",
+                    "action": "notequal",
                     "value": "200"
                 },
                 {
                     "type": "Content-Type",
                     "custom": "",
-                    "action": "equal",
-                    "value": "application/json"
-                }
-            ]
-        },
-        {
-            "_id": "f15467bb-7d4c-415d-bdbc-9b57d3b6e92e",
-            "colId": "f42768ce-cd4c-4544-98b3-a2593a0186c6",
-            "containerId": "",
-            "name": "get ducoments wrong",
-            "url": "http://localhost/Bozont_cucc/accounting/api/documentes.php",
-            "method": "GET",
-            "sortNum": 60000,
-            "created": "2025-04-07T09:18:39.466Z",
-            "modified": "2025-04-07T09:20:04.100Z",
-            "headers": [],
-            "body": {
-                "type": "json",
-                "raw": "{\n   \"email\": \"tictac@jedlik.hu\",\n    \"password\": \"Password123\",\n    \"csrf_token\":\"Generált token: 53a6cee6fccad928174256fda11eb5f7\"\n}",
-                "form": []
-            },
-            "tests": [
-                {
-                    "type": "res-code",
-                    "custom": "",
-                    "action": "equal",
-                    "value": "200"
-                },
-                {
-                    "type": "Content-Type",
-                    "custom": "",
-                    "action": "equal",
-                    "value": "application/json"
-                }
-            ]
-        },
-        {
-            "_id": "3f8318b9-646d-4ff4-b6d0-8e5876825a31",
-            "colId": "f42768ce-cd4c-4544-98b3-a2593a0186c6",
-            "containerId": "",
-            "name": "get teszt statistics wrong",
-            "url": "http://localhost/Bozont_cucc/accounting/api/statistitcs.php",
-            "method": "GET",
-            "sortNum": 60000,
-            "created": "2025-04-07T09:21:11.519Z",
-            "modified": "2025-04-07T09:21:22.911Z",
-            "headers": [],
-            "body": {
-                "type": "json",
-                "raw": "{\n   \"email\": \"tictac@jedlik.hu\",\n    \"password\": \"Password123\",\n    \"csrf_token\":\"Generált token: 53a6cee6fccad928174256fda11eb5f7\"\n}",
-                "form": []
-            },
-            "tests": [
-                {
-                    "type": "res-code",
-                    "custom": "",
-                    "action": "equal",
-                    "value": "200"
-                },
-                {
-                    "type": "Content-Type",
-                    "custom": "",
-                    "action": "equal",
+                    "action": "notequal",
                     "value": "application/json"
                 }
             ]
@@ -326,11 +326,11 @@
             "method": "POST",
             "sortNum": 80000,
             "created": "2025-04-07T09:22:10.126Z",
-            "modified": "2025-04-09T07:47:34.231Z",
+            "modified": "2025-04-16T10:59:10.641Z",
             "headers": [],
             "body": {
                 "type": "json",
-                "raw": "{\n   \"email\": \"tictac@jedlik.hu\",\n    \"password\": \"Password1234\",\n    \"csrf_token\":\"Generált token: 53a6cee6fccad928174256fda11eb5f7\"\n}",
+                "raw": "{\n   \"email\": \"lezerjani@gamil.com\",\n    \"password\": \"Password123a\",\n    \"csrf_token\":\"Generált token: 53a6cee6fccad928174256fda11eb5f7\"\n}",
                 "form": []
             },
             "tests": [
@@ -461,7 +461,110 @@
                     "value": "application/pdf"
                 }
             ]
+        },
+        {
+            "_id": "fed74f81-499d-478c-94cc-086e4f5d7a0e",
+            "colId": "f42768ce-cd4c-4544-98b3-a2593a0186c6",
+            "containerId": "",
+            "name": "post clients wrong test",
+            "url": "http://localhost/Bozont_cucc/accounting/api/clients.php/109",
+            "method": "POST",
+            "sortNum": 110000,
+            "created": "2025-04-16T10:48:08.390Z",
+            "modified": "2025-04-16T10:55:50.819Z",
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "400"
+                },
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "notequal",
+                    "value": "404"
+                },
+                {
+                    "type": "Content-Type",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "application/json"
+                },
+                {
+                    "type": "Content-Type",
+                    "custom": "",
+                    "action": "notequal",
+                    "value": "application/xml"
+                },
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "notequal",
+                    "value": "200"
+                }
+            ]
+        },
+        {
+            "_id": "df96b2b7-b1dc-461a-b659-810604872fca",
+            "colId": "f42768ce-cd4c-4544-98b3-a2593a0186c6",
+            "containerId": "",
+            "name": "delete clients wrong test",
+            "url": "http://localhost/Bozont_cucc/accounting/api/clients.php/109",
+            "method": "DELETE",
+            "sortNum": 130000,
+            "created": "2025-04-16T10:53:38.139Z",
+            "modified": "2025-04-16T10:58:47.890Z",
+            "headers": [
+                {
+                    "name": "Content-Type",
+                    "value": "application/json"
+                }
+            ],
+            "body": {
+                "type": "json",
+                "raw": " {\n     \"email\": \"lezerjani@gamil.com\",\n    \"password\": \"Password123\",\n    \"csrf_token\":\"bc3bd5b69bc00fdde7269ca493b825fd\"\n\n}\n",
+                "form": []
+            },
+            "tests": [
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "400"
+                },
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "notequal",
+                    "value": "404"
+                },
+                {
+                    "type": "Content-Type",
+                    "custom": "",
+                    "action": "equal",
+                    "value": "application/json"
+                },
+                {
+                    "type": "Content-Type",
+                    "custom": "",
+                    "action": "notequal",
+                    "value": "application/xml"
+                },
+                {
+                    "type": "res-code",
+                    "custom": "",
+                    "action": "notequal",
+                    "value": "200"
+                }
+            ]
         }
     ],
-    "ref": "HQKM6zO33jupK0FYGydma3e-q5oYWCBeQBHSmcXQ77GsVRQLOeIxU-H07Qg1iItLvyX2rKVLvnl3zeMpDVjNyA"
+    "ref": "HQKM6zO33jupK0FYGydma703x2mOIUValhiPcE6DDJm6DeUmDI7BsEcjcCqE5o-7S7_SB0UnMfVnU_gxsXELUA"
 }
