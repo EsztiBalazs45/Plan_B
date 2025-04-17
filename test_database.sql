@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Gép: 127.0.0.1
--- Létrehozás ideje: 2025. Ápr 16. 12:44
+-- Létrehozás ideje: 2025. Ápr 17. 11:19
 -- Kiszolgáló verziója: 10.4.32-MariaDB
 -- PHP verzió: 8.2.12
 
@@ -100,7 +100,8 @@ INSERT INTO `appointments` (`id`, `status`, `description`, `user_id`, `title`, `
 (67, 'canceled', 'adadadasdas', 106, 'asdaasdd', '2025-04-10 07:00:00', '2025-04-10 07:30:00', 77),
 (68, 'canceled', 'asdadadasdas', 106, 'valami', '2025-04-11 07:00:00', '2025-04-11 07:30:00', 77),
 (69, 'canceled', 'asdasdad', 106, 'próba', '2025-04-09 10:00:00', '2025-04-09 10:30:00', 77),
-(70, 'confirmed', 'asdasd', 106, 'asdasd', '2025-04-11 10:00:00', '2025-04-11 10:30:00', 77);
+(70, 'confirmed', 'asdasd', 106, 'asdasd', '2025-04-11 10:00:00', '2025-04-11 10:30:00', 77),
+(71, 'confirmed', 'asdadasd', 106, 'asdasd', '2025-04-22 11:00:00', '2025-04-22 11:30:00', 77);
 
 -- --------------------------------------------------------
 
@@ -227,7 +228,8 @@ INSERT INTO `clients` (`id`, `user_id`, `CompanyName`, `tax_number`, `registrati
 (75, 1, 'valami Kft', '410667237', '454582596', '96132 Romaguera Unions\nPort Hymanton, NY 85038-3910', 'Ms. Kacie Nicolas', '+1.937.620.6801', '2025-02-25 15:18:48', '2025-02-25 15:18:48'),
 (77, 106, 'Corki_repcsi Kft', '2145172185718', '945678213', 'Pécs Valami utca 27', 'Kis János', '+36303521472', NULL, NULL),
 (78, 108, 'Tham_Catch_Kft', '27560384-2-08', '5430689124', 'Budapest Sport utca 42', 'Kalapos Béla', '+36202546894', NULL, NULL),
-(79, 109, 'Show_Our_Lazer_Bt', '27564784-2-10', '5520664124', 'Mosonmagyaróvár Várkapu utca 14', 'Kurcsics Angéla', '+30702543367', NULL, NULL);
+(79, 109, 'Show_Our_Lazer_Bt', '27564784-2-10', '5520664124', 'Mosonmagyaróvár Várkapu utca 14', 'Kurcsics Angéla', '+30702543367', NULL, NULL),
+(81, 110, 'szamaraspékség', '67410285-6-54', '06-15-301475', 'Komárom Kisnádor utca 16', 'Szamaras István', '+36703149521', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -250,7 +252,10 @@ CREATE TABLE `dowloaddata` (
 INSERT INTO `dowloaddata` (`id`, `title`, `DataFile`, `description`, `upload_date`) VALUES
 (1, 'Számlázási útmutató', 'szamlazas.pdf', 'Útmutató a számlázáshoz', '2025-03-08 13:57:22'),
 (2, 'Adóbevallás nyomtatvány', 'ado_nyomtatvany.pdf', '2025-ös adóbevallás űrlap', '2025-03-08 13:57:22'),
-(3, 'Szerződés minta', 'szerzodes.docx', 'Általános szerződés sablon', '2025-03-08 13:57:22');
+(3, 'Szerződés minta', 'szerzodes.docx', 'Általános szerződés sablon', '2025-03-08 13:57:22'),
+(7, 'Számlatömb minta', '/uploads/szamlatomb_minta.pdf', 'Könyveléshez használható számlatömb sablon PDF formátumban.', '2025-04-17 11:19:08'),
+(8, 'Adóbevallás útmutató', '/uploads/adobevallas_2025.pdf', 'Útmutató a 2025-ös adóbevallás kitöltéséhez.', '2025-04-17 11:19:08'),
+(9, 'Könyvelési checklist', '/uploads/konyvelesi_checklist.xlsx', 'Ellenőrzőlista a havi könyvelési feladatokhoz Excel formátumban.', '2025-04-17 11:19:08');
 
 -- --------------------------------------------------------
 
@@ -395,7 +400,7 @@ INSERT INTO `payment` (`id`, `user_id`, `service_id`, `payment_intent_id`, `amou
 (4, 108, 5, 'pi_3R9iEaHUv7jEVnHm1bTyUfNa', 40000, '', '2025-04-03 09:30:46'),
 (5, 106, 7, 'pi_3RAttYHUv7jEVnHm1ik7aOBQ', 78000, '', '2025-04-06 16:10:00'),
 (6, 106, 4, 'pi_3RAuCQHUv7jEVnHm1gRpxNnX', 15000, '', '2025-04-06 16:29:29'),
-(7, 110, 5, 'pi_3RETR6HUv7jEVnHm1E4FW5dF', 40000, '', '2025-04-16 12:43:22');
+(8, 110, 3, 'pi_3REoRXHUv7jEVnHm0fUWGHIZ', 48000, '', '2025-04-17 11:09:25');
 
 -- --------------------------------------------------------
 
@@ -515,7 +520,7 @@ INSERT INTO `subscriptions` (`id`, `user_id`, `service_id`, `start_date`, `end_d
 (147, 108, 5, '2025-04-03 07:30:46', NULL, 'active'),
 (148, 106, 7, '2025-04-06 14:10:00', NULL, 'active'),
 (149, 106, 4, '2025-04-06 14:29:29', NULL, 'active'),
-(150, 110, 5, '2025-04-16 10:43:22', NULL, 'active');
+(151, 110, 3, '2025-04-17 09:09:25', NULL, 'active');
 
 -- --------------------------------------------------------
 
@@ -800,19 +805,19 @@ ALTER TABLE `admins`
 -- AUTO_INCREMENT a táblához `appointments`
 --
 ALTER TABLE `appointments`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=71;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=72;
 
 --
 -- AUTO_INCREMENT a táblához `clients`
 --
 ALTER TABLE `clients`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=81;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=82;
 
 --
 -- AUTO_INCREMENT a táblához `dowloaddata`
 --
 ALTER TABLE `dowloaddata`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT a táblához `migrations`
@@ -830,7 +835,7 @@ ALTER TABLE `newsletters`
 -- AUTO_INCREMENT a táblához `payment`
 --
 ALTER TABLE `payment`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT a táblához `personal_acces_token`
@@ -854,7 +859,7 @@ ALTER TABLE `service_users`
 -- AUTO_INCREMENT a táblához `subscriptions`
 --
 ALTER TABLE `subscriptions`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=151;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=152;
 
 --
 -- AUTO_INCREMENT a táblához `users`
