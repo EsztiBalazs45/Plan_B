@@ -12,7 +12,7 @@ error_reporting(E_ALL);
 require_once '../vendor/autoload.php';
 require_once '../includes/config.php';
 
-\Stripe\Stripe::setApiKey('asd');
+\Stripe\Stripe::setApiKey('sk_test_51R5NbyHUv7jEVnHmYVlHmBjKx6mbmqQtxWkqEKOp06JvQdAK4jx0IfGnhZdll4zKA3ee4knG1HWC3DJFmYTioA1D006q3pwsbW');
 
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
