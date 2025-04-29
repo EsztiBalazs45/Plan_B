@@ -23,7 +23,7 @@ if ($conn->connect_error) {
     exit();
 }
 
-\Stripe\Stripe::setApiKey('ads');
+\Stripe\Stripe::setApiKey('asd');
 
 switch ($method) {
     case 'GET':
